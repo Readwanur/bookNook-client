@@ -5,6 +5,10 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --color-tomato: #FF6347;
+  --color-tomato-hover: #E24F34;
+  --color-tomato-light: #FFF5F3;
+  --color-tomato-dark: #C8381E;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
@@ -127,4 +131,41 @@
   html {
     @apply font-sans;
   }
+}
+
+/* Custom Swiper pagination and navigation styles */
+.booknook-swiper .swiper-pagination-bullet {
+  background: #cbd5e1;
+  opacity: 0.7;
+  width: 10px;
+  height: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.booknook-swiper .swiper-pagination-bullet-active {
+  background: #FF6347;
+  width: 32px;
+  border-radius: 9999px;
+  opacity: 1;
+}
+.booknook-swiper .swiper-button-next,
+.booknook-swiper .swiper-button-prev {
+  color: #18181b;
+  background: white;
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f1f5f9;
+  transition: all 0.2s ease;
+}
+.booknook-swiper .swiper-button-next:after,
+.booknook-swiper .swiper-button-prev:after {
+  font-size: 16px;
+  font-weight: bold;
+}
+.booknook-swiper .swiper-button-next:hover,
+.booknook-swiper .swiper-button-prev:hover {
+  background: #FF6347;
+  color: white;
+  border-color: #FF6347;
 }
