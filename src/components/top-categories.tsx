@@ -87,7 +87,7 @@ export default function TopCategories() {
 
           <div className="mt-4 md:mt-0">
             <Link
-              href="/all-books"
+              href="/books"
               className="inline-flex items-center gap-1.5 text-sm font-semibold text-neutral-900 hover:text-tomato transition-colors group"
             >
               <span>View all genres</span>
@@ -103,7 +103,7 @@ export default function TopCategories() {
             return (
               <Link
                 key={cat.slug}
-                href={`/all-books?category=${cat.slug}`}
+                href={`/books?category=${cat.slug}`}
                 className="group p-6 rounded-2xl border border-neutral-200/90 hover:border-tomato/40 bg-white hover:bg-neutral-50/50 transition-all duration-300 flex flex-col justify-between hover:shadow-md"
               >
                 <div>

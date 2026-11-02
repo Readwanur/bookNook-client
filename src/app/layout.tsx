@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
+import { Toaster } from "@/components/ui/toast";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -42,6 +43,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-white text-neutral-900 selection:bg-tomato/20 selection:text-tomato-dark">
         <Navbar />
         <main className="flex-1">{children}</main>
+        <Toaster/>
         <Footer />
       </body>
     </html>

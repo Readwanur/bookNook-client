@@ -35,7 +35,7 @@ const slides: SlideData[] = [
     description:
       "Explore thousands of curated titles across fiction, science, history, and literature. Borrow instantly and embark on your next great literary adventure.",
     ctaText: "Browse Books",
-    ctaLink: "/all-books",
+    ctaLink: "/books",
     featuredBook: {
       title: "Tomorrow, and Tomorrow, and Tomorrow",
       author: "Gabrielle Zevin",
@@ -50,7 +50,7 @@ const slides: SlideData[] = [
     description:
       "No tedious paperwork, no overdue stress. Reserve your favorite titles with a single click and enjoy 14 days of uninterrupted reading bliss.",
     ctaText: "Browse Books",
-    ctaLink: "/all-books",
+    ctaLink: "/books",
     featuredBook: {
       title: "Atomic Habits",
       author: "James Clear",
@@ -65,7 +65,7 @@ const slides: SlideData[] = [
     description:
       "From timeless classics to this week's breakthrough bestsellers, discover stories that inspire, educate, and stay with you long after the final chapter.",
     ctaText: "Browse Books",
-    ctaLink: "/all-books",
+    ctaLink: "/books",
     featuredBook: {
       title: "The Midnight Library",
       author: "Matt Haig",

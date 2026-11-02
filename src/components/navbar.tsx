@@ -2,10 +2,25 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { BookOpen, Menu, X, ArrowRight, User } from "lucide-react";
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
+
+  const navLinks = [
+    { name: "Home", href: "/" },
+    { name: "All Books", href: "/books" },
+    { name: "Add Book", href: "/add-books" },
+  ];
+
+  const isLinkActive = (href: string) => {
+    if (href === "/") {
+      return pathname === "/";
+    }
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-neutral-100 transition-all duration-200">
@@ -31,19 +46,26 @@ export default function Navbar() {
             </Link>
 
             {/* Desktop Navigation Links */}
-            <nav className="hidden md:flex items-center gap-1">
-              <Link
-                href="/"
-                className="px-4 py-2 text-sm font-semibold text-neutral-900 rounded-lg hover:text-tomato hover:bg-neutral-50 transition-colors"
-              >
-                Home
-              </Link>
-              <Link
-                href="/all-books"
-                className="px-4 py-2 text-sm font-medium text-neutral-600 rounded-lg hover:text-tomato hover:bg-neutral-50 transition-colors"
-              >
-                All Books
-              </Link>
+            <nav className="hidden md:flex items-center gap-1.5">
+              {navLinks.map((link) => {
+                const active = isLinkActive(link.href);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`relative px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-200 ${
+                      active
+                        ? "text-tomato bg-tomato-light font-bold shadow-xs border border-tomato/25"
+                        : "text-neutral-600 hover:text-tomato hover:bg-neutral-50"
+                    }`}
+                  >
+                    {link.name}
+                    {active && (
+                      <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-tomato rounded-full" />
+                    )}
+                  </Link>
+                );
+              })}
             </nav>
           </div>
 
@@ -87,20 +109,23 @@ export default function Navbar() {
       {mobileMenuOpen && (
         <div className="md:hidden border-b border-neutral-100 bg-white px-4 pt-2 pb-6 space-y-3">
           <nav className="flex flex-col space-y-1">
-            <Link
-              href="/"
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2.5 text-base font-semibold text-tomato rounded-lg bg-tomato-light/60"
-            >
-              Home
-            </Link>
-            <Link
-              href="/all-books"
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2.5 text-base font-medium text-neutral-700 hover:text-tomato hover:bg-neutral-50 rounded-lg transition-colors"
-            >
-              All Books
-            </Link>
+            {navLinks.map((link) => {
+              const active = isLinkActive(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`px-3 py-2.5 text-base font-semibold rounded-xl transition-colors ${
+                    active
+                      ? "text-tomato bg-tomato-light border-l-4 border-tomato font-bold"
+                      : "text-neutral-700 hover:text-tomato hover:bg-neutral-50"
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
           </nav>
           <div className="pt-3 border-t border-neutral-100 flex flex-col gap-2">
             <Link
@@ -123,4 +148,3 @@ export default function Navbar() {
     </header>
   );
 }
-

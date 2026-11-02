@@ -6,11 +6,26 @@ import {
   Phone,
   MapPin,
   Heart,
-  ExternalLink,
 } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  NewTwitterIcon,
+  GithubIcon,
+  InstagramIcon,
+  Facebook01Icon,
+  Linkedin01Icon,
+} from "@hugeicons/core-free-icons";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+
+  const socialLinks = [
+    { name: "Twitter / 𝕏", href: "https://twitter.com", icon: NewTwitterIcon },
+    { name: "GitHub", href: "https://github.com", icon: GithubIcon },
+    { name: "Instagram", href: "https://instagram.com", icon: InstagramIcon },
+    { name: "Facebook", href: "https://facebook.com", icon: Facebook01Icon },
+    { name: "LinkedIn", href: "https://linkedin.com", icon: Linkedin01Icon },
+  ];
 
   return (
     <footer className="bg-white border-t border-neutral-100 text-neutral-600">
@@ -38,22 +53,21 @@ export default function Footer() {
                 Follow Us
               </p>
               <div className="flex items-center gap-2.5">
-                {[
-                  { name: "Twitter", href: "https://twitter.com", label: "𝕏" },
-                  { name: "GitHub", href: "https://github.com", label: "GH" },
-                  { name: "Instagram", href: "https://instagram.com", label: "IG" },
-                  { name: "Facebook", href: "https://facebook.com", label: "FB" },
-                  { name: "LinkedIn", href: "https://linkedin.com", label: "IN" },
-                ].map((social) => (
+                {socialLinks.map((social) => (
                   <a
                     key={social.name}
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={social.name}
-                    className="w-9 h-9 rounded-lg border border-neutral-200 flex items-center justify-center text-xs font-bold text-neutral-700 hover:text-white hover:bg-tomato hover:border-tomato transition-all duration-200"
+                    className="w-9 h-9 rounded-lg border border-neutral-200 flex items-center justify-center text-neutral-600 hover:text-white hover:bg-tomato hover:border-tomato transition-all duration-200 group shadow-2xs"
                   >
-                    {social.label}
+                    <HugeiconsIcon
+                      icon={social.icon}
+                      size={18}
+                      strokeWidth={1.8}
+                      className="transition-transform duration-200 group-hover:scale-110"
+                    />
                   </a>
                 ))}
               </div>
@@ -76,7 +90,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/all-books"
+                  href="/books"
                   className="hover:text-tomato transition-colors inline-block"
                 >
                   All Books
@@ -84,7 +98,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/all-books?category=Fiction"
+                  href="/books?category=Fiction"
                   className="hover:text-tomato transition-colors inline-block"
                 >
                   Popular Fiction
@@ -117,19 +131,19 @@ export default function Footer() {
             <ul className="space-y-3 text-sm text-neutral-600">
               <li className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-tomato mt-0.5 shrink-0" />
-                <span>42 Reading Corner St, Library Lane, Bookshelf City</span>
+                <span>7/A Banani St, Banani DOHS, Dhaka</span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-tomato shrink-0" />
-                <span>+1 (800) 555-BOOK (2665)</span>
+                <span>+8801410054022</span>
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-tomato shrink-0" />
                 <a
-                  href="mailto:support@booknook.lib"
+                  href="mailto:rrumon710@gmail.com"
                   className="hover:text-tomato transition-colors"
                 >
-                  support@booknook.lib
+                  rrumon720@gmail.com
                 </a>
               </li>
             </ul>

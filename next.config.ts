@@ -4,12 +4,24 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: "https",
-        hostname: "images.unsplash.com",
+        protocol: 'https',
+        hostname: 'i.ibb.co', // ImgBB direct image domain
+        pathname: '/**',
       },
       {
-        protocol: "https",
-        hostname: "covers.openlibrary.org",
+        protocol: 'https',
+        hostname: 'i.postimg.cc', // Postimage direct image domain
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**',
+        pathname: '/**',
+      },
+      {
+        protocol: 'http', // Optional: Add if you also need to support HTTP images
+        hostname: '**',
+        pathname: '/**',
       },
     ],
   },
