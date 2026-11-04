@@ -108,7 +108,6 @@ export default function BannerSlider() {
                     <div className="lg:col-span-7 space-y-5 text-left">
                       {/* Badge */}
                       <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-neutral-200 text-neutral-800 text-xs font-semibold shadow-xs">
-                        <Sparkles className="w-3.5 h-3.5 text-tomato" />
                         <span>{slide.badge}</span>
                       </div>
 

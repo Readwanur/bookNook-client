@@ -30,7 +30,6 @@ const page = async () => {
     console.error("Error fetching books:", error);
   }
 
-  console.log(booksData, "BooksData");
 
   return (
     <div className="min-h-[calc(100vh-80px)] bg-neutral-50/40 py-6 sm:py-10">
@@ -39,7 +38,7 @@ const page = async () => {
         <div className="flex flex-col sm:flex-row sm:items-end justify-between pb-4 mb-6 border-b border-neutral-200/80 gap-3">
           <div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-tomato-light text-tomato text-[11px] font-bold uppercase tracking-wider mb-1.5">
-              <Sparkles className="w-3 h-3" />
+              
               <span>Library Catalog</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 tracking-tight">

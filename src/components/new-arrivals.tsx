@@ -58,7 +58,7 @@ export default async function NewArrivals({ books }: NewArrivalsProps) {
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-4 border-b border-neutral-100 gap-3">
           <div>
             <div className="inline-flex items-center gap-1.5 text-xs font-bold text-tomato uppercase tracking-wider mb-1.5">
-              <Sparkles className="w-3.5 h-3.5" />
+              
               <span>Fresh Off The Shelf</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 tracking-tight">

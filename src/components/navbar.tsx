@@ -13,6 +13,7 @@ export default function Navbar() {
     { name: "Home", href: "/" },
     { name: "All Books", href: "/books" },
     { name: "Add Book", href: "/add-books" },
+    { name: "My Borrows", href: "/my-borrows" },
   ];
 
   const isLinkActive = (href: string) => {
