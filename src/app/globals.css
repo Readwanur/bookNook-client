@@ -143,8 +143,12 @@ html.dark .bg-neutral-50\/60,
 html.dark .bg-neutral-50\/70,
 html.dark .bg-neutral-50\/80,
 html.dark .bg-neutral-100,
-html.dark .bg-neutral-100\/70 {
-  background-color: #272f2d !important;
+html.dark .bg-neutral-100\/70,
+html.dark .hover\:bg-neutral-50:hover,
+html.dark .hover\:bg-neutral-50\/50:hover,
+html.dark .hover\:bg-neutral-100:hover,
+html.dark .hover\:bg-neutral-200:hover {
+  background-color: #2c3533 !important;
   color: #ffffff;
 }
 
@@ -158,6 +162,12 @@ html.dark .text-neutral-600,
 html.dark .text-neutral-500,
 html.dark .text-neutral-400 {
   color: rgba(255, 255, 255, 0.82) !important;
+}
+
+html.dark .text-tomato,
+html.dark .hover\:text-tomato:hover,
+html.dark .group:hover .group-hover\:text-tomato {
+  color: #FF6347 !important;
 }
 
 html.dark .border-neutral-100,
@@ -184,8 +194,11 @@ html.dark textarea::placeholder {
   color: rgba(255, 255, 255, 0.5) !important;
 }
 
-html.dark .bg-tomato-light {
-  background-color: rgba(255, 99, 71, 0.18) !important;
+html.dark .bg-tomato-light,
+html.dark .hover\:bg-tomato-light\/60:hover,
+html.dark .hover\:bg-tomato-light\/50:hover,
+html.dark .hover\:bg-tomato-light\/20:hover {
+  background-color: rgba(255, 99, 71, 0.16) !important;
 }
 
 /* Keep Tomato buttons and accents vibrant in both Light and Dark mode */

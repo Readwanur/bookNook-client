@@ -153,7 +153,7 @@ export default function Navbar() {
                     className={`relative px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-200 ${
                       active
                         ? "text-tomato bg-tomato-light font-bold shadow-xs border border-tomato/25"
-                        : "text-neutral-600 hover:text-tomato hover:bg-neutral-50"
+                        : "text-neutral-600 hover:text-tomato hover:bg-tomato-light/60"
                     }`}
                   >
                     {link.name}
@@ -315,7 +315,7 @@ export default function Navbar() {
                   className={`px-3 py-2.5 text-base font-semibold rounded-xl transition-colors ${
                     active
                       ? "text-tomato bg-tomato-light border-l-4 border-tomato font-bold"
-                      : "text-neutral-700 hover:text-tomato hover:bg-neutral-50"
+                      : "text-neutral-700 hover:text-tomato hover:bg-tomato-light/60"
                   }`}
                 >
                   {link.name}
