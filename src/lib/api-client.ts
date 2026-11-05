@@ -44,9 +44,7 @@ export async function ensureJwtToken(
         return data.token;
       }
     }
-  } catch {
-    // Ignore
-  }
+  } catch {}
 
   return null;
 }

@@ -6,9 +6,7 @@ const client = new MongoClient(process.env.MONGODB_URI as string);
 const db = client.db();
 
 export const auth = betterAuth({
-  secret:
-    process.env.BETTER_AUTH_SECRET ||
-    "booknook-super-secret-auth-key-2026-secure",
+  secret: process.env.BETTER_AUTH_SECRET,
   database: mongodbAdapter(db, {
     client,
   }),
