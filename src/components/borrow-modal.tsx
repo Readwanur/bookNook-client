@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import {
   BookmarkCheck,
   Calendar,
@@ -13,6 +14,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import { toast } from "@/components/ui/toast";
+import { useSession } from "@/lib/auth-client";
 import { DUMMY_USER } from "@/lib/constants";
 import Image from "next/image";
 
@@ -27,12 +29,29 @@ interface BorrowModalProps {
 }
 
 export default function BorrowModal({ book }: BorrowModalProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { data: session } = useSession();
+
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [today, setToday] = useState("");
   const [returnDate, setReturnDate] = useState("");
 
+  const userName = session?.user?.name || DUMMY_USER.name;
+  const userEmail = session?.user?.email || DUMMY_USER.email;
+
   const handleOpen = () => {
+    if (!session?.user) {
+      toast.add({
+        title: "Login Required",
+        description: "Please log in to borrow this book.",
+        type: "info",
+      });
+      router.push(`/login?callbackUrl=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
     const now = new Date();
     const todayStr = now.toISOString().split("T")[0];
     const defaultReturn = new Date(now);
@@ -62,8 +81,8 @@ export default function BorrowModal({ book }: BorrowModalProps) {
       bookId: book._id,
       bookTitle: book.title,
       bookImage: book.coverUrl || "",
-      userName: DUMMY_USER.name,
-      userEmail: DUMMY_USER.email,
+      userName: userName,
+      userEmail: userEmail,
       borrowDate: today,
       returnDate: returnDate,
       status: "Borrowed",
@@ -71,13 +90,26 @@ export default function BorrowModal({ book }: BorrowModalProps) {
     };
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/my-borrows`, {
+      let res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/my-borrows`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(borrowPayload),
       });
+
+      if (!res.ok) {
+        res = await fetch(
+          `${process.env.NEXT_PUBLIC_SERVER_URL}/books/my-borrows`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(borrowPayload),
+          }
+        );
+      }
 
       const data = await res.json();
       console.log("Borrow response:", data);
@@ -203,7 +235,7 @@ export default function BorrowModal({ book }: BorrowModalProps) {
                         type="text"
                         readOnly
                         disabled
-                        value={DUMMY_USER.name}
+                        value={userName}
                         className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-neutral-200 bg-white text-neutral-700 font-medium cursor-not-allowed select-none"
                       />
                     </div>
@@ -220,7 +252,7 @@ export default function BorrowModal({ book }: BorrowModalProps) {
                         type="email"
                         readOnly
                         disabled
-                        value={DUMMY_USER.email}
+                        value={userEmail}
                         className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-neutral-200 bg-white text-neutral-700 font-medium cursor-not-allowed select-none"
                       />
                     </div>

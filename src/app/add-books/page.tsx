@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   BookPlus,
   CheckCircle2,
@@ -17,17 +18,15 @@ import {
   Loader2,
 } from "lucide-react";
 import { toast } from "@/components/ui/toast";
+import { useSession } from "@/lib/auth-client";
 
 // Categories requested: Fiction, Science, History, Kids, Others
 const CATEGORIES = ["Fiction", "Science", "Kids", "History", "Others"] as const;
 
-// Dummy logged-in user data (to be replaced with database/auth session later)
-const DUMMY_USER = {
-  name: "Readwanur Rahman",
-  email: "readwanur@booknook.lib",
-};
-
 export default function AddBookPage() {
+  const router = useRouter();
+  const { data: session, isPending } = useSession();
+
   // Form states
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
@@ -40,6 +39,27 @@ export default function AddBookPage() {
 
   // Form submission states
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Redirect unauthenticated users to Login page and return back after login
+  useEffect(() => {
+    if (!isPending && !session?.user) {
+      router.replace("/login?callbackUrl=%2Fadd-books");
+    }
+  }, [isPending, session, router]);
+
+  if (isPending || !session?.user) {
+    return (
+      <div className="min-h-[calc(100vh-80px)] flex flex-col items-center justify-center p-6">
+        <Loader2 className="w-7 h-7 animate-spin text-tomato mb-2" />
+        <p className="text-xs font-semibold text-neutral-500">
+          Verifying authentication...
+        </p>
+      </div>
+    );
+  }
+
+  const userName = session.user.name || "";
+  const userEmail = session.user.email || "";
 
   // Form submission handler
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -64,8 +84,8 @@ export default function AddBookPage() {
       bookImage: bookImage.trim(),
       description: description.trim(),
       addedBy: {
-        name: DUMMY_USER.name,
-        email: DUMMY_USER.email,
+        name: userName,
+        email: userEmail,
       },
       createdAt: new Date().toISOString(),
       status: "Available",
@@ -161,7 +181,7 @@ export default function AddBookPage() {
                     type="text"
                     readOnly
                     disabled
-                    value={DUMMY_USER.name}
+                    value={userName}
                     title="User Name"
                     className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-neutral-200 bg-white/90 text-neutral-700 font-medium cursor-not-allowed select-none"
                   />
@@ -174,7 +194,7 @@ export default function AddBookPage() {
                     type="email"
                     readOnly
                     disabled
-                    value={DUMMY_USER.email}
+                    value={userEmail}
                     title="User Email"
                     className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-neutral-200 bg-white/90 text-neutral-700 font-medium cursor-not-allowed select-none"
                   />

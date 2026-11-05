@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Eye, BookOpen, Sparkles, BookMarked } from "lucide-react";
+import { Eye, BookOpen, BookMarked } from "lucide-react";
 import Image from "next/image";
 
 interface Book {

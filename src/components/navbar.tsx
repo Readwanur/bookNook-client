@@ -2,12 +2,31 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { BookOpen, Menu, X, ArrowRight, User } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { BookOpen, Menu, X, ArrowRight, User, LogOut } from "lucide-react";
+import { useSession, signOut } from "@/lib/auth-client";
+import { toast } from "@/components/ui/toast";
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const { data: session } = useSession();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast.add({
+        title: "Signed Out",
+        description: "You have been logged out successfully.",
+        type: "success",
+      });
+      router.push("/");
+      router.refresh();
+    } catch (error) {
+      console.error("Sign out error:", error);
+    }
+  };
 
   const navLinks = [
     { name: "Home", href: "/" },
@@ -72,20 +91,53 @@ export default function Navbar() {
 
           {/* Right: Auth Buttons */}
           <div className="hidden md:flex items-center gap-3">
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-neutral-800 hover:text-tomato transition-colors rounded-lg hover:bg-neutral-50"
-            >
-              <User className="w-4 h-4 text-neutral-500" />
-              <span>Login</span>
-            </Link>
-            <Link
-              href="/register"
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold text-white bg-tomato hover:bg-tomato-hover rounded-xl shadow-sm shadow-tomato/25 transition-all duration-200 hover:shadow-md hover:shadow-tomato/30 active:scale-[0.98]"
-            >
-              <span>Register</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+            {session?.user ? (
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-neutral-50 border border-neutral-200/80">
+                  {session.user.image ? (
+                    <img
+                      src={session.user.image}
+                      alt={session.user.name || "Avatar"}
+                      className="w-6 h-6 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-6 h-6 rounded-full bg-tomato text-white text-[11px] font-bold flex items-center justify-center">
+                      {(session.user.name || "U").charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <span className="text-xs font-bold text-neutral-800 max-w-[120px] truncate">
+                    {session.user.name || "User"}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-neutral-600 hover:text-tomato hover:bg-neutral-50 rounded-xl transition-colors cursor-pointer"
+                  title="Sign out"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Logout</span>
+                </button>
+              </div>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-neutral-800 hover:text-tomato transition-colors rounded-lg hover:bg-neutral-50"
+                >
+                  <User className="w-4 h-4 text-neutral-500" />
+                  <span>Login</span>
+                </Link>
+                <Link
+                  href="/register"
+                  className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold text-white bg-tomato hover:bg-tomato-hover rounded-xl shadow-sm shadow-tomato/25 transition-all duration-200 hover:shadow-md hover:shadow-tomato/30 active:scale-[0.98]"
+                >
+                  <span>Register</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile menu toggle */}
@@ -129,20 +181,60 @@ export default function Navbar() {
             })}
           </nav>
           <div className="pt-3 border-t border-neutral-100 flex flex-col gap-2">
-            <Link
-              href="/login"
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full text-center py-2.5 text-sm font-semibold text-neutral-800 border border-neutral-200 rounded-xl hover:bg-neutral-50 transition-colors"
-            >
-              Login
-            </Link>
-            <Link
-              href="/register"
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full text-center py-2.5 text-sm font-semibold text-white bg-tomato hover:bg-tomato-hover rounded-xl shadow-sm shadow-tomato/25 transition-colors"
-            >
-              Register
-            </Link>
+            {session?.user ? (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-neutral-50 border border-neutral-200">
+                  {session.user.image ? (
+                    <img
+                      src={session.user.image}
+                      alt={session.user.name || "Avatar"}
+                      className="w-7 h-7 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-tomato text-white text-xs font-bold flex items-center justify-center">
+                      {(session.user.name || "U").charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-xs font-bold text-neutral-800 truncate">
+                      {session.user.name}
+                    </span>
+                    <span className="text-[10px] text-neutral-500 truncate">
+                      {session.user.email}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    handleSignOut();
+                  }}
+                  className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold text-neutral-700 bg-neutral-100 hover:bg-neutral-200 rounded-xl transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Logout</span>
+                </button>
+              </div>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full text-center py-2.5 text-sm font-semibold text-neutral-800 border border-neutral-200 rounded-xl hover:bg-neutral-50 transition-colors"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full text-center py-2.5 text-sm font-semibold text-white bg-tomato hover:bg-tomato-hover rounded-xl shadow-sm shadow-tomato/25 transition-colors"
+                >
+                  Register
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}
