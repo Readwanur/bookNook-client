@@ -1,10 +1,11 @@
 "use client";
 
-const TOKEN_STORAGE_KEY = "booknook_jwt_token";
+const TOKEN_STORAGE_KEY = process.env.TOKEN_STORAGE_KEY as string;
+const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
 export async function ensureJwtToken(
   email?: string,
-  name?: string
+  name?: string,
 ): Promise<string | null> {
   if (typeof window === "undefined") return null;
 
@@ -14,7 +15,7 @@ export async function ensureJwtToken(
       const payloadPart = existing.split(".")[1];
       if (payloadPart) {
         const decoded = JSON.parse(
-          atob(payloadPart.replace(/-/g, "+").replace(/_/g, "/"))
+          atob(payloadPart.replace(/-/g, "+").replace(/_/g, "/")),
         );
         const now = Math.floor(Date.now() / 1000);
         if (
@@ -29,6 +30,7 @@ export async function ensureJwtToken(
     }
   }
 
+  // Request JWT from Next.js /api/jwt (same secret, zero CORS failures)
   try {
     const res = await fetch("/api/jwt", {
       method: "POST",
@@ -42,8 +44,8 @@ export async function ensureJwtToken(
         return data.token;
       }
     }
-  } catch (err) {
-    console.error("Failed to fetch JWT token:", err);
+  } catch {
+    // Ignore
   }
 
   return null;
@@ -62,7 +64,7 @@ export async function clearJwtToken(): Promise<void> {
 
 export async function getAuthHeaders(
   email?: string,
-  name?: string
+  name?: string,
 ): Promise<Record<string, string>> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -74,3 +76,29 @@ export async function getAuthHeaders(
   return headers;
 }
 
+/**
+ * Tries the Express backend (NEXT_PUBLIC_SERVER_URL) first; if unreachable,
+ * blocked by CORS, or route not yet added (404/401/403), seamlessly falls back
+ * to the built-in Next.js MongoDB API route so the app never breaks.
+ */
+export async function fetchWithFallback(
+  expressPath: string,
+  nextApiPath: string,
+  options?: RequestInit,
+): Promise<Response> {
+  try {
+    const expressRes = await fetch(`${SERVER_URL}${expressPath}`, options);
+    if (expressRes.ok || expressRes.status === 409) {
+      // Clone and verify body is non-empty JSON before returning
+      const cloned = expressRes.clone();
+      const text = await cloned.text();
+      if (text && text.trim().length > 0) {
+        return expressRes;
+      }
+    }
+  } catch {
+    // Network or CORS error on Express server — fall back to Next.js API route
+  }
+
+  return fetch(nextApiPath, options);
+}

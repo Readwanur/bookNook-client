@@ -70,10 +70,20 @@ export default function BookDetailsPage({
 
     const loadBook = async () => {
       try {
-        const res = await fetch(
+        // Fetch from /api/books/[id] which reads bookNook.books + checks alreadyBorrowed & copies
+        let res = await fetch(
           `/api/books/${id}?userEmail=${encodeURIComponent(userEmail)}`,
           { cache: "no-store" }
         );
+
+        if (!res.ok) {
+          res = await fetch(
+            `${process.env.NEXT_PUBLIC_SERVER_URL}/books/${id}?userEmail=${encodeURIComponent(
+              userEmail
+            )}`,
+            { cache: "no-store" }
+          );
+        }
 
         if (res.ok) {
           const data = await res.json();
@@ -88,8 +98,8 @@ export default function BookDetailsPage({
             document.title = "BookNook | Book Not Found";
           }
         }
-      } catch (error) {
-        console.error("Error fetching book details:", error);
+      } catch {
+        // Handled gracefully by Book Not Found UI
       } finally {
         if (isMounted) {
           setIsLoading(false);

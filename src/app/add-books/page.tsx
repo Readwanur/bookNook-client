@@ -119,7 +119,7 @@ export default function AddBookPage() {
     try {
       const headers = await getAuthHeaders(userEmail, userName);
 
-      // Save to MongoDB via JWT-protected /api/books route
+      // Save to MongoDB via /api/books (which guarantees copies & totalCopies are saved cleanly)
       const result = await fetch("/api/books", {
         method: "POST",
         headers,

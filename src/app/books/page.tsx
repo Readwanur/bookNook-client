@@ -37,41 +37,56 @@ export default async function AllBooksPage({
   let booksData: Book[] = [];
 
   try {
-    const db = await getBookNookDb();
-    const filter: Record<string, unknown> = {};
-    if (selectedCategory && selectedCategory !== "All") {
-      filter.category = { $regex: new RegExp(`^${selectedCategory}$`, "i") };
+    const query =
+      selectedCategory && selectedCategory !== "All"
+        ? `?category=${encodeURIComponent(selectedCategory)}`
+        : "";
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/books${query}`,
+      { cache: "no-store" }
+    );
+    if (res.ok) {
+      const data = await res.json();
+      booksData = Array.isArray(data) ? data : data?.data || [];
     }
+  } catch {
+    try {
+      const db = await getBookNookDb();
+      const filter: Record<string, unknown> = {};
+      if (selectedCategory && selectedCategory !== "All") {
+        filter.category = { $regex: new RegExp(`^${selectedCategory}$`, "i") };
+      }
 
-    const docs = await db
-      .collection("books")
-      .find(filter)
-      .sort({ _id: -1 })
-      .toArray();
+      const docs = await db
+        .collection("books")
+        .find(filter)
+        .sort({ _id: -1 })
+        .toArray();
 
-    booksData = docs.map((doc) => {
-      const copies =
-        typeof doc.copies === "number"
-          ? doc.copies
-          : typeof doc.totalCopies === "number"
-          ? doc.totalCopies
-          : 3;
-      return {
-        _id: doc._id.toString(),
-        title: String(doc.title || ""),
-        author: String(doc.author || ""),
-        category: String(doc.category || "Others"),
-        bookImage: doc.bookImage ? String(doc.bookImage) : undefined,
-        image: doc.image ? String(doc.image) : undefined,
-        description: doc.description ? String(doc.description) : undefined,
-        copies,
-        totalCopies:
-          typeof doc.totalCopies === "number" ? doc.totalCopies : copies,
-        status: copies > 0 ? "Available" : "Not Available",
-      };
-    });
-  } catch (error) {
-    console.error("Error fetching books:", error);
+      booksData = docs.map((doc) => {
+        const copies =
+          typeof doc.copies === "number"
+            ? doc.copies
+            : typeof doc.totalCopies === "number"
+            ? doc.totalCopies
+            : 3;
+        return {
+          _id: doc._id.toString(),
+          title: String(doc.title || ""),
+          author: String(doc.author || ""),
+          category: String(doc.category || "Others"),
+          bookImage: doc.bookImage ? String(doc.bookImage) : undefined,
+          image: doc.image ? String(doc.image) : undefined,
+          description: doc.description ? String(doc.description) : undefined,
+          copies,
+          totalCopies:
+            typeof doc.totalCopies === "number" ? doc.totalCopies : copies,
+          status: copies > 0 ? "Available" : "Not Available",
+        };
+      });
+    } catch (error) {
+      console.error("Error fetching books:", error);
+    }
   }
 
   return (

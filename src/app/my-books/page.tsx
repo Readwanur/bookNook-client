@@ -21,7 +21,8 @@ import {
 } from "lucide-react";
 import { toast } from "@/components/ui/toast";
 import { useSession } from "@/lib/auth-client";
-import { getAuthHeaders } from "@/lib/api-client";
+import { getAuthHeaders, fetchWithFallback } from "@/lib/api-client";
+import Image from "next/image";
 
 const CATEGORIES = ["Fiction", "Science", "History", "Kids", "Others"] as const;
 
@@ -85,12 +86,14 @@ export default function MyBooksPage() {
     const loadMyBooks = async () => {
       try {
         const headers = await getAuthHeaders(userEmail, userName);
-        const res = await fetch(
-          `/api/books?email=${encodeURIComponent(userEmail)}`,
+        const query = `?email=${encodeURIComponent(userEmail)}`;
+        const res = await fetchWithFallback(
+          `/my-books${query}`,
+          `/api/books${query}`,
           {
             headers,
             cache: "no-store",
-          }
+          },
         );
 
         if (res.ok) {
@@ -99,8 +102,8 @@ export default function MyBooksPage() {
             setBooks(data);
           }
         }
-      } catch (error) {
-        console.error("Error loading user's books:", error);
+      } catch {
+        // Handled gracefully
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -136,8 +139,8 @@ export default function MyBooksPage() {
       typeof book.copies === "number"
         ? book.copies
         : typeof book.totalCopies === "number"
-        ? book.totalCopies
-        : 3
+          ? book.totalCopies
+          : 3,
     );
     setEditImage(book.bookImage || book.image || "");
     setEditDescription(book.description || "");
@@ -177,11 +180,15 @@ export default function MyBooksPage() {
 
     try {
       const headers = await getAuthHeaders(userEmail, userName);
-      const res = await fetch(`/api/books/${editingBook._id}`, {
-        method: "PUT",
-        headers,
-        body: JSON.stringify(updatedPayload),
-      });
+      const res = await fetchWithFallback(
+        `/books/${editingBook._id}`,
+        `/api/books/${editingBook._id}`,
+        {
+          method: "PUT",
+          headers,
+          body: JSON.stringify(updatedPayload),
+        }
+      );
 
       const data = await res.json();
 
@@ -196,8 +203,8 @@ export default function MyBooksPage() {
                   status:
                     updatedPayload.copies > 0 ? "Available" : "Not Available",
                 }
-              : item
-          )
+              : item,
+          ),
         );
 
         toast.add({
@@ -234,10 +241,14 @@ export default function MyBooksPage() {
 
     try {
       const headers = await getAuthHeaders(userEmail, userName);
-      const res = await fetch(`/api/books/${deletingBook._id}`, {
-        method: "DELETE",
-        headers,
-      });
+      const res = await fetchWithFallback(
+        `/books/${deletingBook._id}`,
+        `/api/books/${deletingBook._id}`,
+        {
+          method: "DELETE",
+          headers,
+        }
+      );
 
       const data = await res.json();
 
@@ -378,10 +389,7 @@ export default function MyBooksPage() {
                     <th scope="col" className="py-3.5 px-4">
                       Copies
                     </th>
-                    <th
-                      scope="col"
-                      className="py-3.5 px-4 sm:px-6 text-right"
-                    >
+                    <th scope="col" className="py-3.5 px-4 sm:px-6 text-right">
                       Actions
                     </th>
                   </tr>
@@ -401,9 +409,11 @@ export default function MyBooksPage() {
                         <td className="py-3.5 px-4 sm:px-6 w-20">
                           <div className="relative w-12 h-16 rounded-lg overflow-hidden bg-neutral-100 border border-neutral-200 shrink-0 flex items-center justify-center">
                             {coverUrl ? (
-                              <img
+                              <Image
                                 src={coverUrl}
                                 alt={book.title}
+                                height={100}
+                                width={100}
                                 referrerPolicy="no-referrer"
                                 className="w-full h-full object-cover"
                               />
@@ -504,9 +514,11 @@ export default function MyBooksPage() {
                 >
                   <div className="relative h-48 w-full rounded-xl overflow-hidden bg-neutral-100 mb-3 border border-neutral-100 flex items-center justify-center">
                     {coverUrl ? (
-                      <img
+                      <Image
                         src={coverUrl}
                         alt={book.title}
+                        height={100}
+                        width={100}
                         referrerPolicy="no-referrer"
                         className="w-full h-full object-cover"
                       />
@@ -665,7 +677,7 @@ export default function MyBooksPage() {
                     value={editCopies}
                     onChange={(e) =>
                       setEditCopies(
-                        Math.max(0, parseInt(e.target.value, 10) || 0)
+                        Math.max(0, parseInt(e.target.value, 10) || 0),
                       )
                     }
                     className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl border border-neutral-200 bg-white text-neutral-900 font-semibold focus:outline-none focus:ring-2 focus:ring-tomato/20 focus:border-tomato"
@@ -799,4 +811,3 @@ export default function MyBooksPage() {
     </div>
   );
 }
-

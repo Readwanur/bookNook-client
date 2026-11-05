@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { toast } from "@/components/ui/toast";
 import { useSession } from "@/lib/auth-client";
-import { getAuthHeaders } from "@/lib/api-client";
+import { getAuthHeaders, fetchWithFallback } from "@/lib/api-client";
 
 interface BorrowedBook {
   _id: string;
@@ -64,8 +64,10 @@ export default function MyBorrowsPage() {
     const loadBorrows = async () => {
       try {
         const headers = await getAuthHeaders(userEmail, userName);
-        const res = await fetch(
-          `/api/borrows?email=${encodeURIComponent(userEmail)}`,
+        const query = `?email=${encodeURIComponent(userEmail)}`;
+        const res = await fetchWithFallback(
+          `/my-borrows${query}`,
+          `/api/borrows${query}`,
           {
             headers,
             cache: "no-store",
@@ -75,11 +77,15 @@ export default function MyBorrowsPage() {
         if (res.ok) {
           const data = await res.json();
           if (isMounted && Array.isArray(data)) {
-            setBorrows(data);
+            const filtered = data.filter(
+              (item: BorrowedBook) =>
+                !item.userEmail || item.userEmail === userEmail
+            );
+            setBorrows(filtered);
           }
         }
-      } catch (error) {
-        console.error("Error fetching borrowed books:", error);
+      } catch {
+        // Handled gracefully
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -111,10 +117,14 @@ export default function MyBorrowsPage() {
 
     try {
       const headers = await getAuthHeaders(userEmail, userName);
-      const res = await fetch(`/api/borrows/${borrowId}`, {
-        method: "DELETE",
-        headers,
-      });
+      const res = await fetchWithFallback(
+        `/my-borrows/${borrowId}`,
+        `/api/borrows/${borrowId}`,
+        {
+          method: "DELETE",
+          headers,
+        }
+      );
 
       const data = await res.json();
 
@@ -134,8 +144,7 @@ export default function MyBorrowsPage() {
           type: "error",
         });
       }
-    } catch (error) {
-      console.error("Error returning book:", error);
+    } catch {
       toast.add({
         title: "Return Failed",
         description: "Could not return book. Please try again later.",

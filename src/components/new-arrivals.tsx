@@ -24,29 +24,39 @@ interface NewArrivalsProps {
 export default async function NewArrivals({ books }: NewArrivalsProps) {
   let booksData: Book[] = books || [];
 
-  // Fetch directly from MongoDB if books prop is not provided
+  // Fetch from Express backend first, fallback to MongoDB
   if (!books) {
     try {
-      const db = await getBookNookDb();
-      const docs = await db
-        .collection("books")
-        .find({})
-        .sort({ _id: -1 })
-        .limit(6)
-        .toArray();
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/books`, {
+        cache: "no-store",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        booksData = Array.isArray(data) ? data : data?.data || [];
+      }
+    } catch {
+      try {
+        const db = await getBookNookDb();
+        const docs = await db
+          .collection("books")
+          .find({})
+          .sort({ _id: -1 })
+          .limit(6)
+          .toArray();
 
-      booksData = docs.map((doc) => ({
-        _id: doc._id.toString(),
-        title: String(doc.title || ""),
-        author: String(doc.author || ""),
-        category: String(doc.category || "Others"),
-        bookImage: doc.bookImage ? String(doc.bookImage) : undefined,
-        image: doc.image ? String(doc.image) : undefined,
-        createdAt: doc.createdAt ? String(doc.createdAt) : undefined,
-        description: doc.description ? String(doc.description) : undefined,
-      }));
-    } catch (error) {
-      console.error("Error fetching latest books for New Arrivals:", error);
+        booksData = docs.map((doc) => ({
+          _id: doc._id.toString(),
+          title: String(doc.title || ""),
+          author: String(doc.author || ""),
+          category: String(doc.category || "Others"),
+          bookImage: doc.bookImage ? String(doc.bookImage) : undefined,
+          image: doc.image ? String(doc.image) : undefined,
+          createdAt: doc.createdAt ? String(doc.createdAt) : undefined,
+          description: doc.description ? String(doc.description) : undefined,
+        }));
+      } catch (error) {
+        console.error("Error fetching latest books for New Arrivals:", error);
+      }
     }
   }
 
