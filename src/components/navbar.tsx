@@ -1,6 +1,11 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useSyncExternalStore,
+} from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -19,35 +24,47 @@ import { useSession, signOut } from "@/lib/auth-client";
 import { ensureJwtToken, clearJwtToken } from "@/lib/api-client";
 import { toast } from "@/components/ui/toast";
 
+function subscribeTheme(callback: () => void) {
+  window.addEventListener("booknook-theme-change", callback);
+  window.addEventListener("storage", callback);
+  return () => {
+    window.removeEventListener("booknook-theme-change", callback);
+    window.removeEventListener("storage", callback);
+  };
+}
+
+function getThemeSnapshot(): boolean {
+  return localStorage.getItem("booknook_theme") === "dark";
+}
+
+function getThemeServerSnapshot(): boolean {
+  return false;
+}
+
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [isDark, setIsDark] = useState<boolean>(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("booknook_theme") === "dark";
-    }
-    return false;
-  });
+  const isDark = useSyncExternalStore(
+    subscribeTheme,
+    getThemeSnapshot,
+    getThemeServerSnapshot
+  );
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const pathname = usePathname();
   const router = useRouter();
   const { data: session } = useSession();
 
-  // Sync dark mode class on <html> and persist in localStorage
+  // Sync dark mode class on <html> after hydration
   useEffect(() => {
-    const root = document.documentElement;
-    if (isDark) {
-      root.classList.add("dark");
-      localStorage.setItem("booknook_theme", "dark");
-    } else {
-      root.classList.remove("dark");
-      localStorage.setItem("booknook_theme", "light");
-    }
+    document.documentElement.classList.toggle("dark", isDark);
   }, [isDark]);
 
   const toggleTheme = () => {
-    setIsDark((prev) => !prev);
+    const nextDark = !isDark;
+    localStorage.setItem("booknook_theme", nextDark ? "dark" : "light");
+    document.documentElement.classList.toggle("dark", nextDark);
+    window.dispatchEvent(new Event("booknook-theme-change"));
   };
 
   // Issue/refresh JWT token whenever session user is present
