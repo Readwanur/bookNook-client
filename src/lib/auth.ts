@@ -2,8 +2,13 @@ import { betterAuth } from "better-auth";
 import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
 
-const client = new MongoClient(process.env.MONGODB_URI as string);
+const uri = process.env.MONGODB_URI as string;
+const client = new MongoClient(uri);
 const db = client.db();
+
+const cleanBaseUrl = process.env.BETTER_AUTH_URL
+  ? process.env.BETTER_AUTH_URL.replace(/\/+$/, "")
+  : undefined;
 
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET,
@@ -15,7 +20,11 @@ export const auth = betterAuth({
     autoSignIn: false,
     minPasswordLength: 6,
   },
-  baseURL: process.env.BETTER_AUTH_URL,
+  baseURL: cleanBaseUrl,
+  trustedOrigins: [
+    process.env.BETTER_AUTH_URL as string,
+    ...(cleanBaseUrl ? [cleanBaseUrl] : []),
+  ],
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID as string,

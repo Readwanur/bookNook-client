@@ -1,15 +1,15 @@
-#  BookNook — Modern Online Library & Book Borrowing Platform
+# BookNook — Modern Online Library & Book Borrowing Platform
 
 **BookNook** is a full-stack community-driven online library and book management platform where readers can discover curated books, contribute new titles to the catalog, borrow books with real-time copy tracking, and manage their personal reading shelf.
 
 ---
 
-##  Live Site URL
-- **Live Client URL:** [https://booknook-client.vercel.app](https://booknook-client.vercel.app)
+## Live Site URL
+- **Live Client URL:** [https://booknook-client-theta-two.vercel.app](https://booknook-client-theta-two.vercel.app)
 
 ---
 
-##  Key Features
+## Key Features
 
 - **Secure Authentication & Private Route Protection (BetterAuth + MongoDB Adapter + JWT):**
   - Supports Email/Password registration (with strict password validation requiring uppercase, lowercase, and 6+ characters) and one-click **Google Social Login**.
@@ -37,7 +37,7 @@
 
 ---
 
-##  Tech Stack
+## Tech Stack
 
 - **Frontend:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4
 - **Animations & UI:** Framer Motion, Swiper.js, Lucide Icons, Base UI / Shadcn UI

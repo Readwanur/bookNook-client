@@ -28,7 +28,11 @@ export default async function NewArrivals({ books }: NewArrivalsProps) {
   // Fetch from Express backend first, fallback to MongoDB
   if (!books) {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/books`, {
+      const serverUrl = (process.env.NEXT_PUBLIC_SERVER_URL || "").replace(
+        /\/+$/,
+        ""
+      );
+      const res = await fetch(`${serverUrl}/books`, {
         cache: "no-store",
       });
       if (res.ok) {

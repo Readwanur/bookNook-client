@@ -1,7 +1,10 @@
 "use client";
 
-const TOKEN_STORAGE_KEY = process.env.TOKEN_STORAGE_KEY as string;
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
+const TOKEN_STORAGE_KEY = process.env.NEXT_PUBLIC_TOKEN_STORAGE_KEY as string;
+const SERVER_URL = (process.env.NEXT_PUBLIC_SERVER_URL as string).replace(
+  /\/+$/,
+  "",
+);
 
 export async function ensureJwtToken(
   email?: string,
@@ -44,7 +47,9 @@ export async function ensureJwtToken(
         return data.token;
       }
     }
-  } catch {}
+  } catch {
+    // Ignore
+  }
 
   return null;
 }

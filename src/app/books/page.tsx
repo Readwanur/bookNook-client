@@ -38,14 +38,17 @@ export default async function AllBooksPage({
   let booksData: Book[] = [];
 
   try {
+    const serverUrl = (process.env.NEXT_PUBLIC_SERVER_URL || "").replace(
+      /\/+$/,
+      ""
+    );
     const query =
       selectedCategory && selectedCategory !== "All"
         ? `?category=${encodeURIComponent(selectedCategory)}`
         : "";
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SERVER_URL}/books${query}`,
-      { cache: "no-store" }
-    );
+    const res = await fetch(`${serverUrl}/books${query}`, {
+      cache: "no-store",
+    });
     if (res.ok) {
       const data = await res.json();
       booksData = Array.isArray(data) ? data : data?.data || [];

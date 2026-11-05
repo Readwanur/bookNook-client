@@ -77,8 +77,12 @@ export default function BookDetailsPage({
         );
 
         if (!res.ok) {
+          const serverUrl = (process.env.NEXT_PUBLIC_SERVER_URL || "").replace(
+            /\/+$/,
+            ""
+          );
           res = await fetch(
-            `${process.env.NEXT_PUBLIC_SERVER_URL}/books/${id}?userEmail=${encodeURIComponent(
+            `${serverUrl}/books/${id}?userEmail=${encodeURIComponent(
               userEmail
             )}`,
             { cache: "no-store" }
