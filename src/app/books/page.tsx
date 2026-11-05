@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Eye, BookOpen, BookMarked, Layers } from "lucide-react";
 import Image from "next/image";
 import { getBookNookDb } from "@/lib/mongodb";
+import { FadeIn, StaggerGrid, StaggerCard } from "@/components/ui/motion-wrapper";
 
 export const metadata: Metadata = {
   title: "BookNook | All Books",
@@ -93,7 +94,7 @@ export default async function AllBooksPage({
     <div className="min-h-[calc(100vh-80px)] bg-neutral-50/40 py-6 sm:py-10">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Page Header - Compact */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between pb-4 mb-6 border-b border-neutral-200/80 gap-3">
+        <FadeIn className="flex flex-col sm:flex-row sm:items-end justify-between pb-4 mb-6 border-b border-neutral-200/80 gap-3">
           <div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-tomato-light text-tomato text-[11px] font-bold uppercase tracking-wider mb-1.5">
               <span>Library Catalog</span>
@@ -121,11 +122,11 @@ export default async function AllBooksPage({
               {booksData.length === 1 ? "Book" : "Books"}
             </div>
           </div>
-        </div>
+        </FadeIn>
 
         {/* Empty State */}
         {booksData.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-2xl border border-neutral-200/80 p-6 shadow-xs max-w-md mx-auto">
+          <FadeIn className="text-center py-16 bg-white rounded-2xl border border-neutral-200/80 p-6 shadow-xs max-w-md mx-auto">
             <div className="w-12 h-12 rounded-xl bg-neutral-100 text-neutral-400 flex items-center justify-center mx-auto mb-3">
               <BookOpen className="w-6 h-6" />
             </div>
@@ -144,17 +145,17 @@ export default async function AllBooksPage({
                 <span>Add a Book</span>
               </Link>
             </div>
-          </div>
+          </FadeIn>
         ) : (
           /* Compact Responsive Grid: 3 cards per row on desktop */
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {booksData.map((book) => {
               const coverUrl = book.bookImage || book.image || "";
               const availableCopies =
                 typeof book.copies === "number" ? book.copies : 3;
 
               return (
-                <div
+                <StaggerCard
                   key={book._id}
                   className="group flex flex-col bg-white rounded-xl border border-neutral-200/90 p-3 hover:border-tomato/40 hover:shadow-md hover:shadow-tomato/5 transition-all duration-300"
                 >
@@ -244,10 +245,10 @@ export default async function AllBooksPage({
                       </Link>
                     </div>
                   </div>
-                </div>
+                </StaggerCard>
               );
             })}
-          </div>
+          </StaggerGrid>
         )}
       </div>
     </div>

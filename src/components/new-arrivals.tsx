@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, BookOpen, Eye, BookMarked } from "lucide-react";
 import Image from "next/image";
 import { getBookNookDb } from "@/lib/mongodb";
+import { FadeIn, StaggerGrid, StaggerCard } from "@/components/ui/motion-wrapper";
 
 export interface Book {
   _id: string;
@@ -76,7 +77,7 @@ export default async function NewArrivals({ books }: NewArrivalsProps) {
     <section className="py-14 sm:py-16 bg-white border-b border-neutral-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-4 border-b border-neutral-100 gap-3">
+        <FadeIn className="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-4 border-b border-neutral-100 gap-3">
           <div>
             <div className="inline-flex items-center gap-1.5 text-xs font-bold text-tomato uppercase tracking-wider mb-1.5">
               <span>Fresh Off The Shelf</span>
@@ -99,11 +100,11 @@ export default async function NewArrivals({ books }: NewArrivalsProps) {
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
-        </div>
+        </FadeIn>
 
         {/* Empty State */}
         {latestBooks.length === 0 ? (
-          <div className="text-center py-12 bg-neutral-50/60 rounded-2xl border border-neutral-200/80 p-6 max-w-md mx-auto">
+          <FadeIn className="text-center py-12 bg-neutral-50/60 rounded-2xl border border-neutral-200/80 p-6 max-w-md mx-auto">
             <BookOpen className="w-10 h-10 text-neutral-400 mx-auto mb-2" />
             <h3 className="text-sm font-bold text-neutral-800">
               No New Arrivals Yet
@@ -119,15 +120,15 @@ export default async function NewArrivals({ books }: NewArrivalsProps) {
                 <span>Add First Book</span>
               </Link>
             </div>
-          </div>
+          </FadeIn>
         ) : (
           /* Books Grid: Latest 6 cards (responsive 6-col on lg, 3 on md, 2 on sm, 1 on mobile) */
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-5">
+          <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-5">
             {latestBooks.map((book) => {
               const coverUrl = book.bookImage || book.image || "";
 
               return (
-                <div
+                <StaggerCard
                   key={book._id}
                   className="group flex flex-col bg-white rounded-xl border border-neutral-200/90 p-3 hover:border-tomato/40 hover:shadow-md hover:shadow-tomato/5 transition-all duration-300"
                 >
@@ -188,14 +189,14 @@ export default async function NewArrivals({ books }: NewArrivalsProps) {
                       </Link>
                     </div>
                   </div>
-                </div>
+                </StaggerCard>
               );
             })}
-          </div>
+          </StaggerGrid>
         )}
 
         {/* See All Books Button below the cards */}
-        <div className="mt-10 text-center">
+        <FadeIn delay={0.15} className="mt-10 text-center">
           <Link
             href="/books"
             className="inline-flex items-center gap-2 px-7 py-3 text-xs sm:text-sm font-bold text-white bg-neutral-900 hover:bg-tomato rounded-xl shadow-xs hover:shadow-md transition-all duration-200 active:scale-[0.98]"
@@ -207,7 +208,7 @@ export default async function NewArrivals({ books }: NewArrivalsProps) {
           <p className="text-[11px] text-neutral-400 mt-2">
             Explore our complete database of titles available for borrowing.
           </p>
-        </div>
+        </FadeIn>
       </div>
     </section>
   );

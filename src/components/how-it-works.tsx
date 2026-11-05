@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { Search, BookMarked, RotateCcw, ArrowRight } from "lucide-react";
+import { FadeIn, StaggerGrid, StaggerCard } from "@/components/ui/motion-wrapper";
 
 export default function HowItWorks() {
   const steps = [
@@ -31,7 +32,7 @@ export default function HowItWorks() {
     <section className="py-20 bg-neutral-50/60 border-y border-neutral-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto mb-16">
+        <FadeIn className="text-center max-w-2xl mx-auto mb-16">
           <div className="inline-block px-3 py-1 rounded-full bg-tomato-light text-tomato text-xs font-bold uppercase tracking-wider mb-3">
             Simple Process
           </div>
@@ -42,14 +43,14 @@ export default function HowItWorks() {
             No complex paperwork or hidden fees. Experience a community-first
             digital library built for effortless reading.
           </p>
-        </div>
+        </FadeIn>
 
         {/* Steps Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+        <StaggerGrid className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
           {steps.map((item, index) => {
             const Icon = item.icon;
             return (
-              <div
+              <StaggerCard
                 key={item.step}
                 className="relative bg-white rounded-2xl p-8 border border-neutral-200/90 shadow-sm hover:shadow-md hover:border-tomato/40 transition-all duration-300 flex flex-col justify-between group"
               >
@@ -75,13 +76,13 @@ export default function HowItWorks() {
                 <div className="pt-6 mt-6 border-t border-neutral-100 flex items-center text-xs font-semibold text-neutral-400 group-hover:text-tomato transition-colors">
                   <span>Step {index + 1} of 3</span>
                 </div>
-              </div>
+              </StaggerCard>
             );
           })}
-        </div>
+        </StaggerGrid>
 
         {/* Bottom Banner Prompt */}
-        <div className="mt-14 text-center">
+        <FadeIn delay={0.15} className="mt-14 text-center">
           <div className="inline-flex flex-col sm:flex-row items-center gap-4 p-4 sm:px-6 sm:py-3.5 bg-white rounded-2xl border border-neutral-200 shadow-xs">
             <span className="text-sm text-neutral-700 font-medium">
               Ready to dive into your next reading journey?
@@ -94,7 +95,7 @@ export default function HowItWorks() {
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
-        </div>
+        </FadeIn>
       </div>
     </section>
   );

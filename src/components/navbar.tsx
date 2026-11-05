@@ -23,6 +23,7 @@ import {
 import { useSession, signOut } from "@/lib/auth-client";
 import { ensureJwtToken, clearJwtToken } from "@/lib/api-client";
 import { toast } from "@/components/ui/toast";
+import { motion, AnimatePresence } from "framer-motion";
 
 function subscribeTheme(callback: () => void) {
   window.addEventListener("booknook-theme-change", callback);
@@ -175,7 +176,11 @@ export default function Navbar() {
                   >
                     {link.name}
                     {active && (
-                      <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-tomato rounded-full" />
+                      <motion.span
+                        layoutId="navbar-active-indicator"
+                        className="absolute bottom-1 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-tomato rounded-full"
+                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                      />
                     )}
                   </Link>
                 );
@@ -230,43 +235,51 @@ export default function Navbar() {
                 </button>
 
                 {/* User Photo Dropdown Menu */}
-                {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-60 rounded-2xl bg-white border border-neutral-200/90 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-                    {/* User Name & Email Header */}
-                    <div className="px-4 py-3 border-b border-neutral-100">
-                      <p className="text-xs font-bold text-neutral-900 truncate">
-                        {session.user.name || "BookNook Reader"}
-                      </p>
-                      <p className="text-[11px] text-neutral-500 truncate mt-0.5">
-                        {session.user.email}
-                      </p>
-                    </div>
+                <AnimatePresence>
+                  {dropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 6, scale: 0.96 }}
+                      transition={{ duration: 0.16, ease: "easeOut" }}
+                      className="absolute right-0 mt-2 w-60 rounded-2xl bg-white border border-neutral-200/90 shadow-xl py-2 z-50"
+                    >
+                      {/* User Name & Email Header */}
+                      <div className="px-4 py-3 border-b border-neutral-100">
+                        <p className="text-xs font-bold text-neutral-900 truncate">
+                          {session.user.name || "BookNook Reader"}
+                        </p>
+                        <p className="text-[11px] text-neutral-500 truncate mt-0.5">
+                          {session.user.email}
+                        </p>
+                      </div>
 
-                    {/* My Profile Link */}
-                    <div className="py-1 px-1.5">
-                      <Link
-                        href="/profile"
-                        onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-neutral-700 hover:text-tomato hover:bg-tomato-light/50 rounded-xl transition-colors"
-                      >
-                        <UserCircle2 className="w-4 h-4 text-neutral-400" />
-                        <span>My Profile</span>
-                      </Link>
-                    </div>
+                      {/* My Profile Link */}
+                      <div className="py-1 px-1.5">
+                        <Link
+                          href="/profile"
+                          onClick={() => setDropdownOpen(false)}
+                          className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-neutral-700 hover:text-tomato hover:bg-tomato-light/50 rounded-xl transition-colors"
+                        >
+                          <UserCircle2 className="w-4 h-4 text-neutral-400" />
+                          <span>My Profile</span>
+                        </Link>
+                      </div>
 
-                    {/* Logout Button */}
-                    <div className="pt-1 mt-1 border-t border-neutral-100 px-1.5">
-                      <button
-                        type="button"
-                        onClick={handleSignOut}
-                        className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        <span>Logout</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
+                      {/* Logout Button */}
+                      <div className="pt-1 mt-1 border-t border-neutral-100 px-1.5">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          <span>Logout</span>
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             ) : (
               <>

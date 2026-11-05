@@ -5,7 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
-import { ArrowRight, BookOpen, Sparkles, BookmarkCheck } from "lucide-react";
+import { ArrowRight, BookmarkCheck } from "lucide-react";
+import { motion } from "framer-motion";
 
 // Import Swiper core and required module styles
 import "swiper/css";
@@ -105,7 +106,12 @@ export default function BannerSlider() {
                 <div className="min-h-[460px] md:min-h-[500px] flex items-center px-6 sm:px-12 md:px-16 py-12 md:py-16">
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center w-full">
                     {/* Left Column: Text Info */}
-                    <div className="lg:col-span-7 space-y-5 text-left">
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, ease: "easeOut" }}
+                      className="lg:col-span-7 space-y-5 text-left"
+                    >
                       {/* Badge */}
                       <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-neutral-200 text-neutral-800 text-xs font-semibold shadow-xs">
                         <span>{slide.badge}</span>
@@ -136,10 +142,15 @@ export default function BannerSlider() {
                           <span>Free Digital Membership</span>
                         </div>
                       </div>
-                    </div>
+                    </motion.div>
 
                     {/* Right Column: Book Presentation Graphic */}
-                    <div className="lg:col-span-5 flex justify-center lg:justify-end">
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.94 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.55, delay: 0.1, ease: "easeOut" }}
+                      className="lg:col-span-5 flex justify-center lg:justify-end"
+                    >
                       <div className="relative group">
                         {/* Book Glow / Drop Shadow */}
                         <div className="absolute inset-0 bg-neutral-900/10 blur-xl transform translate-y-4 rounded-2xl" />
@@ -173,7 +184,7 @@ export default function BannerSlider() {
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </motion.div>
                   </div>
                 </div>
               </SwiperSlide>

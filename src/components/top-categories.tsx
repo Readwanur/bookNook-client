@@ -13,6 +13,7 @@ import {
   Clock,
   Sparkles,
 } from "lucide-react";
+import { FadeIn, StaggerGrid, StaggerCard } from "@/components/ui/motion-wrapper";
 
 export default function TopCategories() {
   const categories = [
@@ -71,7 +72,7 @@ export default function TopCategories() {
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
+        <FadeIn className="flex flex-col md:flex-row md:items-end justify-between mb-12">
           <div>
             <div className="inline-block px-3 py-1 rounded-full bg-tomato-light text-tomato text-xs font-bold uppercase tracking-wider mb-3">
               Curated Shelves
@@ -94,46 +95,47 @@ export default function TopCategories() {
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
-        </div>
+        </FadeIn>
 
         {/* Categories Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {categories.map((cat) => {
             const Icon = cat.icon;
             return (
-              <Link
-                key={cat.slug}
-                href={`/books?category=${cat.slug}`}
-                className="group p-6 rounded-2xl border border-neutral-200/90 hover:border-tomato/40 bg-white hover:bg-neutral-50/50 transition-all duration-300 flex flex-col justify-between hover:shadow-md"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-tomato-light text-tomato group-hover:bg-tomato group-hover:text-white flex items-center justify-center transition-colors duration-200">
-                      <Icon className="w-6 h-6" />
+              <StaggerCard key={cat.slug}>
+                <Link
+                  href={`/books?category=${cat.slug}`}
+                  className="group p-6 rounded-2xl border border-neutral-200/90 hover:border-tomato/40 bg-white hover:bg-neutral-50/50 transition-all duration-300 flex flex-col justify-between hover:shadow-md h-full"
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="w-12 h-12 rounded-xl bg-tomato-light text-tomato group-hover:bg-tomato group-hover:text-white flex items-center justify-center transition-colors duration-200">
+                        <Icon className="w-6 h-6" />
+                      </div>
+                      <span className="text-xs font-bold text-neutral-400 group-hover:text-tomato transition-colors">
+                        {cat.count}
+                      </span>
                     </div>
-                    <span className="text-xs font-bold text-neutral-400 group-hover:text-tomato transition-colors">
-                      {cat.count}
-                    </span>
+                    <h3 className="text-lg font-bold text-neutral-900 group-hover:text-tomato transition-colors">
+                      {cat.name}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-neutral-500 mt-1.5 leading-relaxed">
+                      {cat.description}
+                    </p>
                   </div>
-                  <h3 className="text-lg font-bold text-neutral-900 group-hover:text-tomato transition-colors">
-                    {cat.name}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-neutral-500 mt-1.5 leading-relaxed">
-                    {cat.description}
-                  </p>
-                </div>
 
-                <div className="pt-4 mt-6 border-t border-neutral-100 flex items-center justify-between text-xs font-semibold text-neutral-800 group-hover:text-tomato transition-colors">
-                  <span>Explore category</span>
-                  <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-                </div>
-              </Link>
+                  <div className="pt-4 mt-6 border-t border-neutral-100 flex items-center justify-between text-xs font-semibold text-neutral-800 group-hover:text-tomato transition-colors">
+                    <span>Explore category</span>
+                    <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+                  </div>
+                </Link>
+              </StaggerCard>
             );
           })}
-        </div>
+        </StaggerGrid>
 
         {/* Stats Ribbon */}
-        <div className="mt-16 rounded-3xl bg-neutral-900 text-white p-8 sm:p-10">
+        <FadeIn delay={0.15} className="mt-16 rounded-3xl bg-neutral-900 text-white p-8 sm:p-10">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 divide-y md:divide-y-0 md:divide-x divide-neutral-800">
             {stats.map((stat, i) => {
               const Icon = stat.icon;
@@ -157,7 +159,7 @@ export default function TopCategories() {
               );
             })}
           </div>
-        </div>
+        </FadeIn>
       </div>
     </section>
   );
