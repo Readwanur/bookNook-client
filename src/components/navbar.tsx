@@ -12,6 +12,8 @@ import {
   LogOut,
   ChevronDown,
   UserCircle2,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { useSession, signOut } from "@/lib/auth-client";
 import { ensureJwtToken, clearJwtToken } from "@/lib/api-client";
@@ -20,11 +22,33 @@ import { toast } from "@/components/ui/toast";
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("booknook_theme") === "dark";
+    }
+    return false;
+  });
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const pathname = usePathname();
   const router = useRouter();
   const { data: session } = useSession();
+
+  // Sync dark mode class on <html> and persist in localStorage
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isDark) {
+      root.classList.add("dark");
+      localStorage.setItem("booknook_theme", "dark");
+    } else {
+      root.classList.remove("dark");
+      localStorage.setItem("booknook_theme", "light");
+    }
+  }, [isDark]);
+
+  const toggleTheme = () => {
+    setIsDark((prev) => !prev);
+  };
 
   // Issue/refresh JWT token whenever session user is present
   useEffect(() => {
@@ -142,8 +166,23 @@ export default function Navbar() {
             </nav>
           </div>
 
-          {/* Right: User Photo Dropdown (when logged in) OR Login & Register (when logged out) */}
+          {/* Right: Theme Toggle + User Photo Dropdown (when logged in) OR Login & Register (when logged out) */}
           <div className="hidden md:flex items-center gap-3">
+            {/* Dark / Light Theme Toggle Button */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label="Toggle dark/light theme"
+              title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              className="w-10 h-10 rounded-xl border border-neutral-200/90 bg-neutral-50 hover:border-tomato/50 text-tomato flex items-center justify-center transition-all duration-200 cursor-pointer shadow-2xs hover:scale-105 active:scale-95"
+            >
+              {isDark ? (
+                <Sun className="w-4 h-4 text-tomato" />
+              ) : (
+                <Moon className="w-4 h-4 text-tomato" />
+              )}
+            </button>
+
             {session?.user ? (
               <div className="relative" ref={dropdownRef}>
                 <button
@@ -232,8 +271,20 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Mobile menu toggle */}
-          <div className="flex md:hidden">
+          {/* Mobile theme toggle & menu toggle */}
+          <div className="flex items-center gap-2 md:hidden">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label="Toggle dark/light theme"
+              className="p-2 rounded-xl border border-neutral-200/90 bg-neutral-50 text-tomato transition-colors"
+            >
+              {isDark ? (
+                <Sun className="w-5 h-5 text-tomato" />
+              ) : (
+                <Moon className="w-5 h-5 text-tomato" />
+              )}
+            </button>
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

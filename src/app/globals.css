@@ -88,37 +88,25 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --background: #202625;
+  --foreground: #ffffff;
+  --card: #262d2c;
+  --card-foreground: #ffffff;
+  --popover: #262d2c;
+  --popover-foreground: #ffffff;
+  --primary: #FF6347;
+  --primary-foreground: #ffffff;
+  --secondary: #2b3332;
+  --secondary-foreground: #ffffff;
+  --muted: #2b3332;
+  --muted-foreground: rgba(255, 255, 255, 0.78);
+  --accent: #2b3332;
+  --accent-foreground: #ffffff;
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --border: rgba(255, 255, 255, 0.14);
+  --input: rgba(255, 255, 255, 0.16);
+  --ring: #FF6347;
+  --color-tomato-light: rgba(255, 99, 71, 0.18);
 }
 
 @layer base {
@@ -126,11 +114,89 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground transition-colors duration-200;
   }
   html {
     @apply font-sans;
   }
+}
+
+/* ============================================================================
+   Dark Theme Overrides (#202625 background, white text, Tomato accents)
+   ============================================================================ */
+html.dark body {
+  background-color: #202625 !important;
+  color: #ffffff !important;
+}
+
+html.dark .bg-white,
+html.dark .bg-white\/95,
+html.dark .bg-white\/90 {
+  background-color: #202625 !important;
+  color: #ffffff;
+}
+
+html.dark .bg-neutral-50,
+html.dark .bg-neutral-50\/40,
+html.dark .bg-neutral-50\/50,
+html.dark .bg-neutral-50\/60,
+html.dark .bg-neutral-50\/70,
+html.dark .bg-neutral-50\/80,
+html.dark .bg-neutral-100,
+html.dark .bg-neutral-100\/70 {
+  background-color: #272f2d !important;
+  color: #ffffff;
+}
+
+html.dark .text-neutral-900,
+html.dark .text-neutral-800,
+html.dark .text-neutral-700 {
+  color: #ffffff !important;
+}
+
+html.dark .text-neutral-600,
+html.dark .text-neutral-500,
+html.dark .text-neutral-400 {
+  color: rgba(255, 255, 255, 0.82) !important;
+}
+
+html.dark .border-neutral-100,
+html.dark .border-neutral-200,
+html.dark .border-neutral-200\/90,
+html.dark .border-neutral-200\/80,
+html.dark .border-neutral-200\/70,
+html.dark .border-neutral-200\/50,
+html.dark .border-neutral-200\/40,
+html.dark .divide-neutral-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+html.dark input,
+html.dark select,
+html.dark textarea {
+  background-color: #272f2d !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+html.dark .bg-tomato-light {
+  background-color: rgba(255, 99, 71, 0.18) !important;
+}
+
+/* Keep Tomato buttons and accents vibrant in both Light and Dark mode */
+html.dark .bg-tomato {
+  background-color: #FF6347 !important;
+  color: #ffffff !important;
+}
+html.dark .bg-tomato:hover,
+html.dark .hover\:bg-tomato:hover {
+  background-color: #E24F34 !important;
+  color: #ffffff !important;
 }
 
 /* Custom Swiper pagination and navigation styles */
@@ -158,6 +224,12 @@
   border: 1px solid #f1f5f9;
   transition: all 0.2s ease;
 }
+html.dark .booknook-swiper .swiper-button-next,
+html.dark .booknook-swiper .swiper-button-prev {
+  color: #ffffff;
+  background: #272f2d;
+  border-color: rgba(255, 255, 255, 0.15);
+}
 .booknook-swiper .swiper-button-next:after,
 .booknook-swiper .swiper-button-prev:after {
   font-size: 16px;
@@ -165,7 +237,7 @@
 }
 .booknook-swiper .swiper-button-next:hover,
 .booknook-swiper .swiper-button-prev:hover {
-  background: #FF6347;
-  color: white;
-  border-color: #FF6347;
+  background: #FF6347 !important;
+  color: white !important;
+  border-color: #FF6347 !important;
 }
