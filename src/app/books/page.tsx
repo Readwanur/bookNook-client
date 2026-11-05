@@ -1,7 +1,17 @@
 import React from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
-import { Eye, BookOpen, BookMarked } from "lucide-react";
+import { Eye, BookOpen, BookMarked, Layers } from "lucide-react";
 import Image from "next/image";
+import { getBookNookDb } from "@/lib/mongodb";
+
+export const metadata: Metadata = {
+  title: "BookNook | All Books",
+  description:
+    "Browse our complete collection of books available for borrowing at BookNook.",
+};
+
+export const dynamic = "force-dynamic";
 
 interface Book {
   _id: string;
@@ -11,25 +21,58 @@ interface Book {
   bookImage?: string;
   image?: string;
   description?: string;
+  copies?: number;
+  totalCopies?: number;
   status?: string;
 }
 
-const page = async () => {
+export default async function AllBooksPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ category?: string }>;
+}) {
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const selectedCategory = resolvedSearchParams.category || "";
+
   let booksData: Book[] = [];
 
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/books`, {
-      cache: "no-store",
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      booksData = Array.isArray(data) ? data : data?.data || [];
+    const db = await getBookNookDb();
+    const filter: Record<string, unknown> = {};
+    if (selectedCategory && selectedCategory !== "All") {
+      filter.category = { $regex: new RegExp(`^${selectedCategory}$`, "i") };
     }
+
+    const docs = await db
+      .collection("books")
+      .find(filter)
+      .sort({ _id: -1 })
+      .toArray();
+
+    booksData = docs.map((doc) => {
+      const copies =
+        typeof doc.copies === "number"
+          ? doc.copies
+          : typeof doc.totalCopies === "number"
+          ? doc.totalCopies
+          : 3;
+      return {
+        _id: doc._id.toString(),
+        title: String(doc.title || ""),
+        author: String(doc.author || ""),
+        category: String(doc.category || "Others"),
+        bookImage: doc.bookImage ? String(doc.bookImage) : undefined,
+        image: doc.image ? String(doc.image) : undefined,
+        description: doc.description ? String(doc.description) : undefined,
+        copies,
+        totalCopies:
+          typeof doc.totalCopies === "number" ? doc.totalCopies : copies,
+        status: copies > 0 ? "Available" : "Not Available",
+      };
+    });
   } catch (error) {
     console.error("Error fetching books:", error);
   }
-
 
   return (
     <div className="min-h-[calc(100vh-80px)] bg-neutral-50/40 py-6 sm:py-10">
@@ -38,19 +81,30 @@ const page = async () => {
         <div className="flex flex-col sm:flex-row sm:items-end justify-between pb-4 mb-6 border-b border-neutral-200/80 gap-3">
           <div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-tomato-light text-tomato text-[11px] font-bold uppercase tracking-wider mb-1.5">
-              
               <span>Library Catalog</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 tracking-tight">
-              All Books
+              {selectedCategory ? `${selectedCategory} Books` : "All Books"}
             </h1>
             <p className="text-xs sm:text-sm text-neutral-500 mt-0.5">
               Browse our collection of titles available for borrowing.
             </p>
           </div>
 
-          <div className="text-xs font-semibold text-neutral-600 bg-white border border-neutral-200 px-3 py-1.5 rounded-lg shadow-2xs self-start sm:self-auto">
-            Showing <span className="text-tomato font-bold">{booksData.length}</span> {booksData.length === 1 ? "Book" : "Books"}
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            {selectedCategory && (
+              <Link
+                href="/books"
+                className="text-xs font-semibold text-tomato hover:underline px-2.5 py-1.5"
+              >
+                Clear Filter
+              </Link>
+            )}
+            <div className="text-xs font-semibold text-neutral-600 bg-white border border-neutral-200 px-3 py-1.5 rounded-lg shadow-2xs">
+              Showing{" "}
+              <span className="text-tomato font-bold">{booksData.length}</span>{" "}
+              {booksData.length === 1 ? "Book" : "Books"}
+            </div>
           </div>
         </div>
 
@@ -60,13 +114,16 @@ const page = async () => {
             <div className="w-12 h-12 rounded-xl bg-neutral-100 text-neutral-400 flex items-center justify-center mx-auto mb-3">
               <BookOpen className="w-6 h-6" />
             </div>
-            <h3 className="text-base font-bold text-neutral-900">No Books Found</h3>
+            <h3 className="text-base font-bold text-neutral-900">
+              No Books Found
+            </h3>
             <p className="text-xs text-neutral-500 mt-1 max-w-xs mx-auto">
-              There are currently no books in the collection. Be the first to contribute a title!
+              There are currently no books in this collection. Be the first to
+              contribute a title!
             </p>
             <div className="mt-4">
               <Link
-                href="/add-books"
+                href="/add-book"
                 className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-tomato hover:bg-tomato-hover rounded-lg shadow-sm transition-colors"
               >
                 <span>Add a Book</span>
@@ -78,6 +135,8 @@ const page = async () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {booksData.map((book) => {
               const coverUrl = book.bookImage || book.image || "";
+              const availableCopies =
+                typeof book.copies === "number" ? book.copies : 3;
 
               return (
                 <div
@@ -98,7 +157,9 @@ const page = async () => {
                     ) : (
                       <div className="flex flex-col items-center justify-center text-neutral-400 p-3">
                         <BookMarked className="w-8 h-8 opacity-40 mb-1" />
-                        <span className="text-[10px] font-medium">No cover image</span>
+                        <span className="text-[10px] font-medium">
+                          No cover image
+                        </span>
                       </div>
                     )}
 
@@ -106,6 +167,26 @@ const page = async () => {
                     <div className="absolute top-2.5 left-2.5">
                       <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-white/95 backdrop-blur-md text-tomato rounded shadow-2xs border border-neutral-200/40">
                         {book.category}
+                      </span>
+                    </div>
+
+                    {/* Copies Badge */}
+                    <div className="absolute bottom-2.5 right-2.5">
+                      <span
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide rounded shadow-2xs backdrop-blur-md ${
+                          availableCopies > 0
+                            ? "bg-emerald-500/90 text-white"
+                            : "bg-neutral-900/90 text-white"
+                        }`}
+                      >
+                        <Layers className="w-2.5 h-2.5" />
+                        <span>
+                          {availableCopies > 0
+                            ? `${availableCopies} ${
+                                availableCopies === 1 ? "Copy" : "Copies"
+                              }`
+                            : "Not Available"}
+                        </span>
                       </span>
                     </div>
                   </div>
@@ -123,7 +204,10 @@ const page = async () => {
 
                       {/* Author */}
                       <p className="text-xs text-neutral-500 mt-0.5 line-clamp-1">
-                        by <span className="text-neutral-700 font-medium">{book.author}</span>
+                        by{" "}
+                        <span className="text-neutral-700 font-medium">
+                          {book.author}
+                        </span>
                       </p>
 
                       {/* Short Description */}
@@ -153,6 +237,4 @@ const page = async () => {
       </div>
     </div>
   );
-};
-
-export default page;
+}

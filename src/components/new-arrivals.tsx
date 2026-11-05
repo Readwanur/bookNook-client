@@ -1,7 +1,8 @@
 import React from "react";
 import Link from "next/link";
-import { ArrowRight, BookOpen, Sparkles, Eye, BookMarked } from "lucide-react";
+import { ArrowRight, BookOpen, Eye, BookMarked } from "lucide-react";
 import Image from "next/image";
+import { getBookNookDb } from "@/lib/mongodb";
 
 export interface Book {
   _id: string;
@@ -23,17 +24,27 @@ interface NewArrivalsProps {
 export default async function NewArrivals({ books }: NewArrivalsProps) {
   let booksData: Book[] = books || [];
 
-  // Fetch from database if books prop is not provided directly
+  // Fetch directly from MongoDB if books prop is not provided
   if (!books) {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/books`, {
-        cache: "no-store",
-      });
+      const db = await getBookNookDb();
+      const docs = await db
+        .collection("books")
+        .find({})
+        .sort({ _id: -1 })
+        .limit(6)
+        .toArray();
 
-      if (res.ok) {
-        const data = await res.json();
-        booksData = Array.isArray(data) ? data : data?.data || [];
-      }
+      booksData = docs.map((doc) => ({
+        _id: doc._id.toString(),
+        title: String(doc.title || ""),
+        author: String(doc.author || ""),
+        category: String(doc.category || "Others"),
+        bookImage: doc.bookImage ? String(doc.bookImage) : undefined,
+        image: doc.image ? String(doc.image) : undefined,
+        createdAt: doc.createdAt ? String(doc.createdAt) : undefined,
+        description: doc.description ? String(doc.description) : undefined,
+      }));
     } catch (error) {
       console.error("Error fetching latest books for New Arrivals:", error);
     }
@@ -58,14 +69,14 @@ export default async function NewArrivals({ books }: NewArrivalsProps) {
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-4 border-b border-neutral-100 gap-3">
           <div>
             <div className="inline-flex items-center gap-1.5 text-xs font-bold text-tomato uppercase tracking-wider mb-1.5">
-              
               <span>Fresh Off The Shelf</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 tracking-tight">
               New Arrivals
             </h2>
             <p className="text-xs sm:text-sm text-neutral-500 mt-1 max-w-xl">
-              Recently added to our library collection. Discover fresh voices and latest contributions.
+              Recently added to our library collection. Discover fresh voices
+              and latest contributions.
             </p>
           </div>
 
@@ -84,13 +95,15 @@ export default async function NewArrivals({ books }: NewArrivalsProps) {
         {latestBooks.length === 0 ? (
           <div className="text-center py-12 bg-neutral-50/60 rounded-2xl border border-neutral-200/80 p-6 max-w-md mx-auto">
             <BookOpen className="w-10 h-10 text-neutral-400 mx-auto mb-2" />
-            <h3 className="text-sm font-bold text-neutral-800">No New Arrivals Yet</h3>
+            <h3 className="text-sm font-bold text-neutral-800">
+              No New Arrivals Yet
+            </h3>
             <p className="text-xs text-neutral-500 mt-1">
               Add books to the database to see them featured here.
             </p>
             <div className="mt-4">
               <Link
-                href="/add-books"
+                href="/add-book"
                 className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-tomato hover:bg-tomato-hover rounded-lg transition-colors shadow-2xs"
               >
                 <span>Add First Book</span>

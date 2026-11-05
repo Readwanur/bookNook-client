@@ -1,8 +1,17 @@
 import React from "react";
+import type { Metadata } from "next";
 import BannerSlider from "@/components/banner-slider";
 import NewArrivals from "@/components/new-arrivals";
 import HowItWorks from "@/components/how-it-works";
 import TopCategories from "@/components/top-categories";
+
+export const metadata: Metadata = {
+  title: "BookNook | Home",
+  description:
+    "BookNook — Modern Online Library & Book Borrowing Platform. Discover, share, and borrow books effortlessly.",
+};
+
+export const dynamic = "force-dynamic";
 
 export default function HomePage() {
   return (

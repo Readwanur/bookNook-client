@@ -12,10 +12,11 @@ import {
   Loader2,
   CheckCircle2,
   BookOpen,
+  Ban,
 } from "lucide-react";
 import { toast } from "@/components/ui/toast";
 import { useSession } from "@/lib/auth-client";
-import { DUMMY_USER } from "@/lib/constants";
+import { getAuthHeaders } from "@/lib/api-client";
 import Image from "next/image";
 
 interface BorrowModalProps {
@@ -25,10 +26,17 @@ interface BorrowModalProps {
     author: string;
     coverUrl?: string;
     category?: string;
+    copies?: number;
   };
+  alreadyBorrowed?: boolean;
+  onBorrowSuccess?: (remainingCopies: number) => void;
 }
 
-export default function BorrowModal({ book }: BorrowModalProps) {
+export default function BorrowModal({
+  book,
+  alreadyBorrowed = false,
+  onBorrowSuccess,
+}: BorrowModalProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { data: session } = useSession();
@@ -38,8 +46,12 @@ export default function BorrowModal({ book }: BorrowModalProps) {
   const [today, setToday] = useState("");
   const [returnDate, setReturnDate] = useState("");
 
-  const userName = session?.user?.name || DUMMY_USER.name;
-  const userEmail = session?.user?.email || DUMMY_USER.email;
+  const userName = session?.user?.name || "";
+  const userEmail = session?.user?.email || "";
+
+  const availableCopies =
+    typeof book.copies === "number" ? book.copies : 3;
+  const isOutOfStock = availableCopies <= 0;
 
   const handleOpen = () => {
     if (!session?.user) {
@@ -49,6 +61,25 @@ export default function BorrowModal({ book }: BorrowModalProps) {
         type: "info",
       });
       router.push(`/login?callbackUrl=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
+    if (isOutOfStock) {
+      toast.add({
+        title: "Not Available",
+        description: "All copies of this book are currently borrowed.",
+        type: "error",
+      });
+      return;
+    }
+
+    if (alreadyBorrowed) {
+      toast.add({
+        title: "Already Borrowed!",
+        description:
+          "You cannot borrow the same book two times at the same time.",
+        type: "error",
+      });
       return;
     }
 
@@ -71,7 +102,11 @@ export default function BorrowModal({ book }: BorrowModalProps) {
     e.preventDefault();
 
     if (!returnDate) {
-      alert("Please select a return date.");
+      toast.add({
+        title: "Return Date Required",
+        description: "Please select a return date.",
+        type: "error",
+      });
       return;
     }
 
@@ -90,29 +125,29 @@ export default function BorrowModal({ book }: BorrowModalProps) {
     };
 
     try {
-      let res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/my-borrows`, {
+      const headers = await getAuthHeaders(userEmail, userName);
+      const res = await fetch("/api/borrows", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
         body: JSON.stringify(borrowPayload),
       });
 
-      if (!res.ok) {
-        res = await fetch(
-          `${process.env.NEXT_PUBLIC_SERVER_URL}/books/my-borrows`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(borrowPayload),
-          }
-        );
-      }
-
       const data = await res.json();
-      console.log("Borrow response:", data);
+
+      if (!res.ok) {
+        toast.add({
+          title:
+            data.code === "DOUBLE_BORROW"
+              ? "Already Borrowed!"
+              : "Borrow Failed",
+          description:
+            data.error ||
+            "Could not borrow this book. Please check availability.",
+          type: "error",
+        });
+        setIsOpen(false);
+        return;
+      }
 
       toast.add({
         title: "Borrow Confirmed!",
@@ -121,11 +156,21 @@ export default function BorrowModal({ book }: BorrowModalProps) {
       });
 
       setIsOpen(false);
+
+      if (onBorrowSuccess) {
+        const nextCopies =
+          typeof data.remainingCopies === "number"
+            ? data.remainingCopies
+            : Math.max(0, availableCopies - 1);
+        onBorrowSuccess(nextCopies);
+      }
+      router.refresh();
     } catch (error) {
       console.error("Error borrowing book:", error);
       toast.add({
         title: "Borrow Failed",
-        description: "An error occurred while submitting your borrow request. Please try again.",
+        description:
+          "An error occurred while submitting your borrow request. Please try again.",
         type: "error",
       });
     } finally {
@@ -136,14 +181,25 @@ export default function BorrowModal({ book }: BorrowModalProps) {
   return (
     <>
       {/* Trigger Button on Book Details Page */}
-      <button
-        type="button"
-        onClick={handleOpen}
-        className="w-full inline-flex items-center justify-center gap-2.5 py-3.5 px-6 text-sm font-bold text-white bg-tomato hover:bg-tomato-hover active:scale-[0.99] rounded-xl shadow-md shadow-tomato/25 hover:shadow-lg hover:shadow-tomato/30 transition-all duration-200 cursor-pointer"
-      >
-        <BookmarkCheck className="w-4 h-4" />
-        <span>Borrow This Book</span>
-      </button>
+      {isOutOfStock ? (
+        <button
+          type="button"
+          disabled
+          className="w-full inline-flex items-center justify-center gap-2.5 py-3.5 px-6 text-sm font-bold text-neutral-500 bg-neutral-200 border border-neutral-300 rounded-xl cursor-not-allowed select-none"
+        >
+          <Ban className="w-4 h-4 text-neutral-500" />
+          <span>Not Available</span>
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={handleOpen}
+          className="w-full inline-flex items-center justify-center gap-2.5 py-3.5 px-6 text-sm font-bold text-white bg-tomato hover:bg-tomato-hover active:scale-[0.99] rounded-xl shadow-md shadow-tomato/25 hover:shadow-lg hover:shadow-tomato/30 transition-all duration-200 cursor-pointer"
+        >
+          <BookmarkCheck className="w-4 h-4" />
+          <span>Borrow This Book</span>
+        </button>
+      )}
 
       {/* Modal Backdrop & Dialog */}
       {isOpen && (
@@ -174,7 +230,8 @@ export default function BorrowModal({ book }: BorrowModalProps) {
                 Borrow Book
               </h2>
               <p className="text-xs text-neutral-500 mt-1">
-                Confirm your borrowing request. The title will be added to your reading shelf.
+                Confirm your borrowing request. Available copies:{" "}
+                <strong className="text-neutral-800">{availableCopies}</strong>
               </p>
             </div>
 
@@ -305,7 +362,10 @@ export default function BorrowModal({ book }: BorrowModalProps) {
               {/* Terms note */}
               <p className="text-[11px] text-neutral-400 flex items-center gap-1.5 pt-1">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                <span>You can return this book anytime from your &quot;My Borrows&quot; dashboard.</span>
+                <span>
+                  You can return this book anytime from your &quot;My
+                  Borrows&quot; dashboard.
+                </span>
               </p>
 
               {/* Action Buttons */}
@@ -343,4 +403,3 @@ export default function BorrowModal({ book }: BorrowModalProps) {
     </>
   );
 }
-

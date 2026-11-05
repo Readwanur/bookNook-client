@@ -17,7 +17,7 @@ export const auth = betterAuth({
     autoSignIn: false,
     minPasswordLength: 6,
   },
-  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+  baseURL: process.env.BETTER_AUTH_URL,
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID as string,

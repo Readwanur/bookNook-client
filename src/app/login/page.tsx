@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -14,6 +14,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import { ensureJwtToken } from "@/lib/api-client";
 import { toast } from "@/components/ui/toast";
 
 function LoginFormContent() {
@@ -26,6 +27,10 @@ function LoginFormContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    document.title = "BookNook | Login";
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,6 +66,7 @@ function LoginFormContent() {
           type: "error",
         });
       } else {
+        await ensureJwtToken(email.trim());
         toast.add({
           title: "Login Successful!",
           description: "Welcome back to BookNook.",

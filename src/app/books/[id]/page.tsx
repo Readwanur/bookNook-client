@@ -1,5 +1,8 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState, use } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   BookOpen,
@@ -9,9 +12,13 @@ import {
   Tag,
   BookMarked,
   ShieldCheck,
+  Loader2,
+  Layers,
+  Ban,
 } from "lucide-react";
 import BorrowModal from "@/components/borrow-modal";
 import Image from "next/image";
+import { useSession } from "@/lib/auth-client";
 
 interface BookData {
   _id?: string;
@@ -21,35 +28,91 @@ interface BookData {
   bookImage?: string;
   image?: string;
   description?: string;
+  copies?: number;
+  totalCopies?: number;
   status?: string;
   createdAt?: string;
-  addedBy?: {
-    name?: string;
-    email?: string;
-  } | string;
+  alreadyBorrowed?: boolean;
+  addedBy?:
+    | {
+        name?: string;
+        email?: string;
+      }
+    | string;
 }
 
-export default async function BookDetailsPage({
+export default function BookDetailsPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
-  let bookData: BookData | null = null;
+  const { id } = use(params);
+  const router = useRouter();
+  const { data: session, isPending } = useSession();
 
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SERVER_URL}/books/${id}`,
-      {
-        cache: "no-store",
-      }
-    );
+  const [bookData, setBookData] = useState<BookData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-    if (res.ok) {
-      bookData = await res.json();
+  const userEmail = session?.user?.email || "";
+
+  // Private Route Protection: Redirect unauthenticated visitors to Login page
+  useEffect(() => {
+    if (!isPending && !session?.user) {
+      router.replace(`/login?callbackUrl=${encodeURIComponent(`/books/${id}`)}`);
     }
-  } catch (error) {
-    console.error("Error fetching book details:", error);
+  }, [isPending, session, router, id]);
+
+  // Fetch Book Details once authenticated
+  useEffect(() => {
+    if (isPending || !session?.user) return;
+
+    let isMounted = true;
+
+    const loadBook = async () => {
+      try {
+        const res = await fetch(
+          `/api/books/${id}?userEmail=${encodeURIComponent(userEmail)}`,
+          { cache: "no-store" }
+        );
+
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted) {
+            setBookData(data);
+            document.title = data?.title
+              ? `BookNook | ${data.title}`
+              : "BookNook | Book Details";
+          }
+        } else {
+          if (isMounted) {
+            document.title = "BookNook | Book Not Found";
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching book details:", error);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadBook();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id, isPending, session?.user, userEmail]);
+
+  if (isPending || !session?.user || isLoading) {
+    return (
+      <div className="min-h-[calc(100vh-80px)] flex flex-col items-center justify-center p-6">
+        <Loader2 className="w-8 h-8 animate-spin text-tomato mb-3" />
+        <p className="text-xs font-semibold text-neutral-500">
+          Loading book details...
+        </p>
+      </div>
+    );
   }
 
   // Fallback if book is not found
@@ -64,7 +127,8 @@ export default async function BookDetailsPage({
             Book Not Found
           </h1>
           <p className="text-sm text-neutral-500 mt-2">
-            The book you are looking for doesn&apos;t exist or may have been removed.
+            The book you are looking for doesn&apos;t exist or may have been
+            removed.
           </p>
           <div className="mt-6">
             <Link
@@ -81,6 +145,10 @@ export default async function BookDetailsPage({
   }
 
   const coverUrl = bookData.bookImage || bookData.image || "";
+  const availableCopies =
+    typeof bookData.copies === "number" ? bookData.copies : 3;
+  const isAvailable = availableCopies > 0;
+
   const addedByName =
     typeof bookData.addedBy === "object"
       ? bookData.addedBy?.name || "BookNook Member"
@@ -131,7 +199,9 @@ export default async function BookDetailsPage({
                   ) : (
                     <div className="flex flex-col items-center justify-center h-full text-neutral-400 p-6">
                       <BookMarked className="w-16 h-16 opacity-40 mb-2" />
-                      <span className="text-xs font-medium">No cover image available</span>
+                      <span className="text-xs font-medium">
+                        No cover image available
+                      </span>
                     </div>
                   )}
 
@@ -144,10 +214,17 @@ export default async function BookDetailsPage({
 
                   {/* Status Indicator */}
                   <div className="absolute bottom-3 right-3">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide bg-emerald-500/90 text-white rounded-md backdrop-blur-sm shadow-xs">
-                      <CheckCircle2 className="w-3 h-3" />
-                      <span>{bookData.status || "Available"}</span>
-                    </span>
+                    {isAvailable ? (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide bg-emerald-500/90 text-white rounded-md backdrop-blur-sm shadow-xs">
+                        <CheckCircle2 className="w-3 h-3" />
+                        <span>{availableCopies} Available</span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide bg-neutral-900/90 text-white rounded-md backdrop-blur-sm shadow-xs">
+                        <Ban className="w-3 h-3" />
+                        <span>Not Available</span>
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -160,6 +237,21 @@ export default async function BookDetailsPage({
                       author: bookData.author || "",
                       coverUrl: coverUrl,
                       category: bookData.category,
+                      copies: availableCopies,
+                    }}
+                    alreadyBorrowed={Boolean(bookData.alreadyBorrowed)}
+                    onBorrowSuccess={(remaining) => {
+                      setBookData((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              copies: remaining,
+                              status:
+                                remaining > 0 ? "Available" : "Not Available",
+                              alreadyBorrowed: true,
+                            }
+                          : prev
+                      );
                     }}
                   />
 
@@ -187,14 +279,17 @@ export default async function BookDetailsPage({
 
                 {/* Author */}
                 <p className="text-base sm:text-lg text-neutral-600 mt-2 font-medium">
-                  by <span className="text-neutral-900 font-bold">{bookData.author}</span>
+                  by{" "}
+                  <span className="text-neutral-900 font-bold">
+                    {bookData.author}
+                  </span>
                 </p>
 
                 {/* Key Details Strip */}
                 <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 rounded-2xl bg-neutral-50/70 border border-neutral-200/70 text-xs">
                   <div>
                     <span className="text-neutral-400 block text-[10px] uppercase font-bold tracking-wider">
-                      Genre
+                      Category
                     </span>
                     <span className="font-semibold text-neutral-800 mt-0.5 block truncate">
                       {bookData.category}
@@ -203,10 +298,19 @@ export default async function BookDetailsPage({
 
                   <div>
                     <span className="text-neutral-400 block text-[10px] uppercase font-bold tracking-wider">
-                      Status
+                      Available Copies
                     </span>
-                    <span className="font-semibold text-emerald-600 mt-0.5 block">
-                      {bookData.status || "Available"}
+                    <span
+                      className={`font-bold mt-0.5 inline-flex items-center gap-1 ${
+                        isAvailable ? "text-emerald-600" : "text-red-600"
+                      }`}
+                    >
+                      <Layers className="w-3.5 h-3.5" />
+                      {isAvailable
+                        ? `${availableCopies} ${
+                            availableCopies === 1 ? "Copy" : "Copies"
+                          }`
+                        : "0 (Not Available)"}
                     </span>
                   </div>
 
@@ -226,7 +330,8 @@ export default async function BookDetailsPage({
                     Description & Overview
                   </h2>
                   <div className="text-sm text-neutral-700 leading-relaxed space-y-2 whitespace-pre-line bg-white rounded-xl border border-neutral-100 p-4">
-                    {bookData.description || "No description provided for this book."}
+                    {bookData.description ||
+                      "No description provided for this book."}
                   </div>
                 </div>
               </div>
@@ -261,13 +366,18 @@ export default async function BookDetailsPage({
 
                   {bookData.createdAt && (
                     <div className="hidden sm:flex flex-col items-end text-right text-[11px] text-neutral-400 shrink-0">
-                      <span className="font-medium text-neutral-500">Added on</span>
+                      <span className="font-medium text-neutral-500">
+                        Added on
+                      </span>
                       <span>
-                        {new Date(bookData.createdAt).toLocaleDateString("en-GB", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                        })}
+                        {new Date(bookData.createdAt).toLocaleDateString(
+                          "en-GB",
+                          {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          }
+                        )}
                       </span>
                     </div>
                   )}

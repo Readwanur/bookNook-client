@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { toast } from "@/components/ui/toast";
 import { useSession } from "@/lib/auth-client";
+import { getAuthHeaders } from "@/lib/api-client";
 
 interface BorrowedBook {
   _id: string;
@@ -42,6 +43,11 @@ export default function MyBorrowsPage() {
   const userEmail = session?.user?.email || "";
   const userName = session?.user?.name || "Reader";
 
+  // Set page title
+  useEffect(() => {
+    document.title = "BookNook | My Borrows";
+  }, []);
+
   // Redirect unauthenticated users to Login page and return back after login
   useEffect(() => {
     if (!isPending && !session?.user) {
@@ -57,45 +63,19 @@ export default function MyBorrowsPage() {
 
     const loadBorrows = async () => {
       try {
-        // Try /books/my-borrows first, fallback to /my-borrows
-        let res = await fetch(
-          `${process.env.NEXT_PUBLIC_SERVER_URL}/books/my-borrows?email=${encodeURIComponent(
-            userEmail
-          )}`,
-          { cache: "no-store" }
+        const headers = await getAuthHeaders(userEmail, userName);
+        const res = await fetch(
+          `/api/borrows?email=${encodeURIComponent(userEmail)}`,
+          {
+            headers,
+            cache: "no-store",
+          }
         );
-
-        if (!res.ok) {
-          res = await fetch(
-            `${process.env.NEXT_PUBLIC_SERVER_URL}/my-borrows?email=${encodeURIComponent(
-              userEmail
-            )}`,
-            { cache: "no-store" }
-          );
-        }
 
         if (res.ok) {
           const data = await res.json();
-          let list: BorrowedBook[] = [];
-
-          if (Array.isArray(data)) {
-            list = data;
-          } else if (
-            data &&
-            typeof data === "object" &&
-            (data._id || data.bookTitle)
-          ) {
-            list = [data];
-          } else if (data?.data && Array.isArray(data.data)) {
-            list = data.data;
-          }
-
-          if (isMounted) {
-            // Filter by logged-in user's email if backend returns all borrows
-            const userBorrows = list.filter(
-              (item) => !item.userEmail || item.userEmail === userEmail
-            );
-            setBorrows(userBorrows);
+          if (isMounted && Array.isArray(data)) {
+            setBorrows(data);
           }
         }
       } catch (error) {
@@ -112,12 +92,12 @@ export default function MyBorrowsPage() {
     return () => {
       isMounted = false;
     };
-  }, [isPending, userEmail]);
+  }, [isPending, userEmail, userName]);
 
   if (isPending || !session?.user) {
     return (
       <div className="min-h-[calc(100vh-80px)] flex flex-col items-center justify-center p-6">
-        <Loader2 className="w-7 h-7 animate-spin text-tomato mb-2" />
+        <Loader2 className="w-8 h-8 animate-spin text-tomato mb-2" />
         <p className="text-xs font-semibold text-neutral-500">
           Verifying authentication...
         </p>
@@ -125,43 +105,35 @@ export default function MyBorrowsPage() {
     );
   }
 
-  // Handle "Return Book"
+  // Handle "Return Book" (deletes borrow record & increments book copies by 1 via $inc)
   const handleReturnBook = async (borrowId: string, bookTitle: string) => {
-    const confirmReturn = window.confirm(
-      `Are you sure you want to return "${bookTitle}"?`
-    );
-    if (!confirmReturn) return;
-
     setReturningId(borrowId);
 
     try {
-      let res = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/books/my-borrows/${borrowId}`,
-        {
-          method: "DELETE",
-        }
-      );
-
-      if (!res.ok) {
-        res = await fetch(
-          `${process.env.NEXT_PUBLIC_SERVER_URL}/my-borrows/${borrowId}`,
-          {
-            method: "DELETE",
-          }
-        );
-      }
-
-      const data = await res.json();
-      console.log("Return result:", data);
-
-      toast.add({
-        title: "Book Returned!",
-        description: `"${bookTitle}" has been returned to the library successfully.`,
-        type: "success",
+      const headers = await getAuthHeaders(userEmail, userName);
+      const res = await fetch(`/api/borrows/${borrowId}`, {
+        method: "DELETE",
+        headers,
       });
 
-      // Remove from table immediately
-      setBorrows((prev) => prev.filter((b) => b._id !== borrowId));
+      const data = await res.json();
+
+      if (res.ok && data.acknowledged) {
+        toast.add({
+          title: "Book Returned!",
+          description: `"${bookTitle}" has been returned and its available copies increased by 1.`,
+          type: "success",
+        });
+
+        // Remove from table immediately
+        setBorrows((prev) => prev.filter((b) => b._id !== borrowId));
+      } else {
+        toast.add({
+          title: "Return Failed",
+          description: data.error || "Could not return book. Please try again.",
+          type: "error",
+        });
+      }
     } catch (error) {
       console.error("Error returning book:", error);
       toast.add({
@@ -246,7 +218,7 @@ export default function MyBorrowsPage() {
                 <thead>
                   <tr className="bg-neutral-50/80 border-b border-neutral-200/80 text-[11px] font-bold uppercase tracking-wider text-neutral-500">
                     <th scope="col" className="py-3.5 px-4 sm:px-6">
-                      Book
+                      Image
                     </th>
                     <th scope="col" className="py-3.5 px-4">
                       Title
@@ -359,8 +331,8 @@ export default function MyBorrowsPage() {
                 {borrows.length === 1 ? "book" : "books"}
               </span>
               <span className="flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3 text-emerald-500" /> Free
-                returns anytime
+                <CheckCircle2 className="w-3 h-3 text-emerald-500" /> Returning
+                a book restores +1 available copy
               </span>
             </div>
           </div>

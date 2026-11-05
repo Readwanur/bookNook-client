@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -32,6 +32,10 @@ function RegisterFormContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+
+  useEffect(() => {
+    document.title = "BookNook | Register";
+  }, []);
 
   // Password validation checks
   const hasUppercase = /[A-Z]/.test(password);
